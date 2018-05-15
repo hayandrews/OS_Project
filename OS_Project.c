@@ -52,9 +52,11 @@ void insertFIFO(int data) {
     struct Node *new_node = (struct Node*)malloc(sizeof(struct Node));
     new_node->data = data;
     new_node->next = NULL;
+    //If empty insert at head
     if (holdQueue2 == NULL) {
         holdQueue2 = new_node;
     } else {
+        //Other wise add to the end of the list
         struct Node *pointer = holdQueue2;
         while(pointer->next != NULL){
             pointer = pointer->next;
@@ -63,8 +65,16 @@ void insertFIFO(int data) {
     }
 }
 
-struct Node pop(struct Node *queue){
-    
+struct Node *pop(struct Node *queue){
+    if (queue != NULL) {
+        struct Node *tmp = queue;
+        queue = tmp->next;
+        tmp->next = NULL;
+        return tmp;
+    } else {
+        printf("Queue is empty");
+        return NULL;
+    }
 }
 
 void printList(struct Node *queue){
@@ -108,4 +118,10 @@ int main(void){
     printList(holdQueue2);
     insertFIFO(8);
     printList(holdQueue2);
+    pop(holdQueue2);
+    printList(holdQueue2);
+    printList(holdQueue1);
+    pop(holdQueue1);
+    printList(holdQueue1);
+
 }
