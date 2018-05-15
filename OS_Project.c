@@ -16,3 +16,14 @@ struct Node
 
 Node holdQueue1 = Null;
 Node holdQueue2 = Null;
+
+void insertSJF(int data) {
+    new_node = (struct Node*)malloc(sizeof(struct Node));
+    new_node->data = data;
+    new_node->next = NULL
+    
+}
+
+void insertFIFO(int data) {
+    
+}
