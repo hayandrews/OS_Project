@@ -12,14 +12,14 @@ struct Node
 {
     int data;
     struct Node *next;
-}
+};
 
-Node *holdQueue1 = NULL;
-Node *holdQueue2 = NULL;
+struct Node *holdQueue1 = NULL;
+struct Node *holdQueue2 = NULL;
 
 //Inserts Shortest Job at front of the list
 void insertSJF(int data) {
-    new_node = (struct Node*)malloc(sizeof(struct Node));
+    struct Node *new_node = (struct Node*)malloc(sizeof(struct Node));
     new_node->data = data;
     new_node->next = NULL;
     //Empty queue make new_node the head
@@ -29,12 +29,12 @@ void insertSJF(int data) {
         new_node->next = holdQueue1;
         holdQueue1 = new_node;
     } else { //Else iterate through the list
-        Node *pointer = holdQueue1;
+        struct Node *pointer = holdQueue1;
         while(pointer->next != NULL){
-            if (new_node->data < tmpnode->data){
+            if (new_node->data < pointer->next->data){
                 break;
             } else {
-                tmpnode = tmpnode->next;
+                pointer = pointer->next;
             }
         }
         //If between two nodes, the new_nodes next is same as pointers next
@@ -46,13 +46,66 @@ void insertSJF(int data) {
             pointer->next = new_node;
         }
     }
-    
 }
 
 void insertFIFO(int data) {
+    struct Node *new_node = (struct Node*)malloc(sizeof(struct Node));
+    new_node->data = data;
+    new_node->next = NULL;
+    if (holdQueue2 == NULL) {
+        holdQueue2 = new_node;
+    } else {
+        struct Node *pointer = holdQueue2;
+        while(pointer->next != NULL){
+            pointer = pointer->next;
+        }
+        pointer->next = new_node;
+    }
+}
+
+struct Node pop(struct Node *queue){
+    
+}
+
+void printList(struct Node *queue){
+    struct Node *pointer = queue;
+    if (pointer == NULL){
+        printf("empty\n");
+    } else{
+        while(pointer != NULL){
+            printf("%d --> ",pointer->data);
+            pointer = pointer->next;
+        }
+        printf("Null \n");
+    }
     
 }
 
 int main(void){
-    return 0;
+    printList(holdQueue1);
+    insertSJF(5);
+    printList(holdQueue1);
+    insertSJF(6);
+    printList(holdQueue1);
+    insertSJF(4);
+    printList(holdQueue1);
+    insertSJF(8);
+    printList(holdQueue1);
+    insertSJF(7);
+    printList(holdQueue1);
+    insertSJF(8);
+    printList(holdQueue1);
+    printList(holdQueue2);
+    insertFIFO(5);
+    printList(holdQueue2);
+    insertFIFO(6);
+    printList(holdQueue2);
+    insertFIFO(4);
+    printList(holdQueue2);
+    insertFIFO(8);
+    printList(holdQueue2);
+    insertFIFO(7);
+    printList(holdQueue2);
+    insertFIFO(8);
+    printList(holdQueue2);
 }
