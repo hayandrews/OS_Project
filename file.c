@@ -1,3 +1,9 @@
+//
+//  file.c
+//  Deals with opening, reading, writing, and closing files.
+//
+//  Created by Jessica Morris on 5/15/18.
+//
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -5,7 +11,9 @@
 
 FILE *input;
 
-int next_line(char * buffer) {
+int next_line(char * buffer) { /*uses buffer var to return value and returns 
+							   an additional int that is the length of the 
+							   string */
 	if (input == NULL) {
 		perror("file not opened");
 		exit(1);
