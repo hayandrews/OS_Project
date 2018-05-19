@@ -33,7 +33,7 @@ void inc_com() {
 	exit(1);
 }
 
-void pop_sub{
+void pop_sub(){
 
 }
 
