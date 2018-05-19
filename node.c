@@ -23,6 +23,8 @@ struct Job
 struct Job *hold_queue_1 = NULL;
 struct Job *hold_queue_2 = NULL;
 struct Job *submit_queue = NULL;
+struct Job *ready_queue = NULL;
+extern int avail_mem;
 
 //Inserts Shortest Job at front of the list
 void insertSJF(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
@@ -90,6 +92,19 @@ void insertFIFO(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue
     }
 }
 
+void insertFIFO2(struct Job **queue, struct Job * node) {
+	if (*queue == NULL) {
+		*queue = node;
+	}
+	else {
+		struct Job * pointer = *queue;
+		while (pointer->next != NULL) {
+			pointer = pointer->next;
+		}
+		pointer->next = node;
+	}
+}
+
 void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
 	struct Job *new_node = (struct Job*)malloc(sizeof(struct Job));
 	new_node->arrive_time = arr_t;
@@ -115,39 +130,13 @@ void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue
 	}
 }
 
-struct Job * pop(struct Job *queue){
-    if (queue != NULL) {
-		struct Job *ret = (struct Job*)malloc(sizeof(struct Job));
-		ret->arrive_time = queue->arrive_time;
-		ret->job_num = queue->job_num;
-		ret->mem_req = queue->mem_req;
-		ret->dev_req = queue->dev_req;
-		ret->run_time = queue->run_time;
-		ret->queue_priority = queue->queue_priority;
-		ret->next = NULL;
-		ret->completion_time = queue->completion_time;
-		ret->dev_owned = queue->dev_owned;
-		if (queue->next == NULL) {
-			free(queue);
-			queue = NULL;
-		}
-		else {
-			struct Job *tmp = queue;
-			queue->arrive_time = tmp->arrive_time;
-			queue->job_num = tmp->job_num;
-			queue->mem_req = tmp->mem_req;
-			queue->dev_req = tmp->dev_req;
-			queue->run_time = tmp->run_time;
-			queue->queue_priority = tmp->queue_priority;
-			queue->next = tmp->next;
-			queue->completion_time = tmp->completion_time;
-			queue->dev_owned = tmp->dev_owned;
-			free(tmp);
-		}
-        return ret;
-    } 
-	printf("Queue is empty");
-    return NULL;
+struct Job * pop(struct Job **queue) {
+	struct Job *ret = *queue;
+	if (ret) {
+		*queue = ret->next;
+	}
+	ret->next = NULL;
+	return ret;
 }
 
 void printList(struct Job *queue){
@@ -166,19 +155,20 @@ void printList(struct Job *queue){
     
 }
 
-//void pop_sub() {
-//	struct Job * cur_job = pop(submit_queue);
-//	if (cur_job->mem_req < avail_mem) {
-//		//insert into ready queue
-//	}
-//	else if (cur_job->queue_priority == 1) {
-//		insertSJF(cur_job);
-//	}
-//	else if (cur_job->queue_priority == 2) {
-//		insertFIFO(cur_job);
-//	}
-//	else {
-//		perror("Job's priority does not match a hold queue.");
-//		exit(1);
-//	}
-//}
+void pop_sub() {
+	struct Job * cur_job = pop(&submit_queue);
+	insertFIFO2(&hold_queue_2, cur_job);
+	//if (cur_job->mem_req < avail_mem) {
+	//	//insert into ready queue
+	//}
+	//else if (cur_job->queue_priority == 1) {
+	//	//insertSJF(cur_job);
+	//}
+	//else if (cur_job->queue_priority == 2) {
+	//}
+	//else {
+	//	perror("Job's priority does not match a hold queue.");
+	//	exit(1);
+	//}
+	
+}

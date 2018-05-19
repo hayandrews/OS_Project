@@ -33,10 +33,6 @@ void inc_com() {
 	exit(1);
 }
 
-void pop_sub(){
-
-}
-
 void parse_C(char * command) {
 /*string parsing found at 
 https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
@@ -137,39 +133,43 @@ void parse_line(char * command) {
 }
 
 int main(void){
-    printList(hold_queue_1);
-    insertSJF(1, 1, 1, 1, 5, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 2, 1, 1, 6, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 3, 1, 1, 4, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 4, 1, 1, 8, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 5, 1, 1, 7, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 6, 1, 1, 8, 1);
-    printList(hold_queue_1);
-    printList(hold_queue_2);
-    insertFIFO(1, 1, 1, 1, 5, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 2, 1, 1, 6, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 3, 1, 1, 4, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 4, 1, 1, 8, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 5, 1, 1, 7, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 6, 1, 1, 8, 1);
-    printList(hold_queue_2);
-	printList(pop(hold_queue_2));
-    printList(hold_queue_2);
-    printList(hold_queue_1);
-	printList(pop(hold_queue_1));
-    printList(hold_queue_1);
+ //   printList(hold_queue_1);
+ //   insertSJF(1, 1, 1, 1, 5, 1);
+ //   printList(hold_queue_1);
+ //   insertSJF(1, 2, 1, 1, 6, 1);
+ //   printList(hold_queue_1);
+ //   insertSJF(1, 3, 1, 1, 4, 1);
+ //   printList(hold_queue_1);
+ //   insertSJF(1, 4, 1, 1, 8, 1);
+ //   printList(hold_queue_1);
+ //   insertSJF(1, 5, 1, 1, 7, 1);
+ //   printList(hold_queue_1);
+ //   insertSJF(1, 6, 1, 1, 8, 1);
+ //   printList(hold_queue_1);
+ //   printList(hold_queue_2);
+ //   insertFIFO(1, 1, 1, 1, 5, 1);
+ //   printList(hold_queue_2);
+	//printf("\t\tPOPPING\n");
+	//printList(pop(&hold_queue_2));
+	//printf("\t\tPOPPED\n");
+	//printList(hold_queue_2);
+ //   insertFIFO(1, 2, 1, 1, 6, 1);
+ //   printList(hold_queue_2);
+ //   insertFIFO(1, 3, 1, 1, 4, 1);
+ //   printList(hold_queue_2);
+ //   insertFIFO(1, 4, 1, 1, 8, 1);
+ //   printList(hold_queue_2);
+ //   insertFIFO(1, 5, 1, 1, 7, 1);
+ //   printList(hold_queue_2);
+ //   insertFIFO(1, 6, 1, 1, 8, 1);
+ //   printList(hold_queue_2);
+ //   printList(hold_queue_1);
+	//printf("\t\tPOPPING\n");
+	//printList(pop(&hold_queue_1));
+	//printf("\t\tPOPPED\n");
+ //   printList(hold_queue_1);
 
-	/*printf("Please input filename:\n");
+	printf("Please input filename:\n");
 	scanf("%s", s_input);
 	open_file(s_input);
 	printList(submit_queue);
@@ -181,6 +181,13 @@ int main(void){
 		parse_line(cur_line);
 	}
 	printList(submit_queue);
-	close_file();*/
-    outputJSON();
+	close_file();
+	for (int i = 0; i < 2; i++) {
+		pop_sub();
+	}
+	printf("\n\nfinished pop_sub\n");
+	printList(submit_queue);
+	printList(hold_queue_2);
+
+    //outputJSON();
 }
