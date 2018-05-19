@@ -39,6 +39,22 @@ https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 	}
 }
 
+void parse_A(char * command) {
+
+}
+
+void parse_Q(char * command) {
+
+}
+
+void parse_L(char * command) {
+
+}
+
+void parse_D(char * command) {
+
+}
+
 void parse_line(char * command) {
 	/*we assume that the 'C' case happens exactly once and it happens at the
 	very first line */
@@ -49,14 +65,18 @@ void parse_line(char * command) {
 		break;
 	case 'A':
 		printf("command is a Job arrival. \n");
+		parse_A(command);
 		break;
 	case 'Q':
 		printf("command is a Request for devices. \n");
+		parse_Q(command);
 		break;
 	case 'L':
 		printf("command is a Release for devices. \n");
+		parse_L(command);
 		break;
 	case 'D':
+		parse_D(command);
 		printf("command is a Display request. \n");
 		break;
 	default:
