@@ -13,8 +13,8 @@
 char s_input[STRING_SIZE];	/* input file name */
 char cur_line[STRING_SIZE]; /* current line in file*/
 int cur_length;				/* length for above string*/
-extern struct Node *holdQueue1;
-extern struct Node *holdQueue2;
+extern struct Job *holdQueue1;
+extern struct Job *holdQueue2;
 
 int sys_configs[4]; /*index 0 = start time, 1 = main memory, 
 					2 = serial devices, 3 = time quantum*/
@@ -86,35 +86,35 @@ void parse_line(char * command) {
 
 int main(void){
     printList(holdQueue1);
-    insertSJF(5);
+    insertSJF(1, 1, 1, 5);
     printList(holdQueue1);
-    insertSJF(6);
+    insertSJF(1, 1, 1, 6);
     printList(holdQueue1);
-    insertSJF(4);
+    insertSJF(1, 1, 1, 4);
     printList(holdQueue1);
-    insertSJF(8);
+    insertSJF(1, 1, 1, 8);
     printList(holdQueue1);
-    insertSJF(7);
+    insertSJF(1, 1, 1, 7);
     printList(holdQueue1);
-    insertSJF(8);
+    insertSJF(1, 1, 1, 8);
     printList(holdQueue1);
     printList(holdQueue2);
-    insertFIFO(5);
+    insertFIFO(1, 1, 1, 5);
     printList(holdQueue2);
-    insertFIFO(6);
+    insertFIFO(1, 1, 1, 6);
     printList(holdQueue2);
-    insertFIFO(4);
+    insertFIFO(1, 1, 1, 4);
     printList(holdQueue2);
-    insertFIFO(8);
+    insertFIFO(1, 1, 1, 8);
     printList(holdQueue2);
-    insertFIFO(7);
+    insertFIFO(1, 1, 1, 7);
     printList(holdQueue2);
-    insertFIFO(8);
+    insertFIFO(1, 1, 1, 8);
     printList(holdQueue2);
-    pop(holdQueue2);
+	printList(pop(holdQueue2));
     printList(holdQueue2);
     printList(holdQueue1);
-    pop(holdQueue1);
+	printList(pop(holdQueue1));
     printList(holdQueue1);
 
 	printf("Please input filename:\n");
