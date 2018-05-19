@@ -13,8 +13,9 @@
 char s_input[STRING_SIZE];	/* input file name */
 char cur_line[STRING_SIZE]; /* current line in file*/
 int cur_length;				/* length for above string*/
-extern struct Job *holdQueue1;
-extern struct Job *holdQueue2;
+extern struct Job *hold_queue_1;
+extern struct Job *hold_queue_2;
+extern struct Job *submit_queue;
 
 int sys_configs[4]; /*index 0 = start time, 1 = main memory, 
 					2 = serial devices, 3 = time quantum*/
@@ -32,7 +33,6 @@ void parse_C(char * command) {
 /*string parsing found at 
 https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 */
-	int count = 0;
 	char * pch;
 	pch = strtok(command, " =CMSQ");
 	start_time = atoi(pch);
@@ -43,23 +43,51 @@ https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 	pch = strtok(NULL, " =CMSQ");
 	time_quantum = atoi(pch);
 
-	printf("start: %d\tmain: %d\tserial: %d\time: %d\n", start_time, main_memory, serial_devices, time_quantum);
+	printf("C:\tstart: %d\tmain: %d\tserial: %d\time: %d\n", start_time, 
+		main_memory, serial_devices, time_quantum);
 }
 
 void parse_A(char * command) {
+	int arr_t, job_n, mem_r, dev_r, run_t, queue_p;
+	char * pch;
+	pch = strtok(command, " =AJMSRP");
+	arr_t = atoi(pch);
+	pch = strtok(NULL, " =AJMSRP");
+	job_n = atoi(pch);
+	pch = strtok(NULL, " =AJMSRP");
+	mem_r = atoi(pch);
+	pch = strtok(NULL, " =AJMSRP");
+	dev_r = atoi(pch);
+	pch = strtok(NULL, " =AJMSRP");
+	run_t = atoi(pch);
+	pch = strtok(NULL, " =AJMSRP");
+	queue_p = atoi(pch);
+
+	printf("A:\tarr_t: %d\tjob_n: %d\tmem_r: %d\tdev_r: %d\trun_t: %d\tqueue_p: %d\n", 
+		arr_t, job_n, mem_r, dev_r, run_t, queue_p);
+
+	if (mem_r > main_memory) {
+		printf("job requires %d memory, but system only has %d memory.\n", mem_r, main_memory);
+	}
+	else if (dev_r > serial_devices) {
+		printf("job requires %d devices, but system only has %d devices.\n", dev_r, serial_devices);
+	}
+	else {
+		insert_sub(arr_t, job_n, mem_r, dev_r, run_t, queue_p);
+	}
 
 }
 
 void parse_Q(char * command) {
-
+	printf("%s", command);
 }
 
 void parse_L(char * command) {
-
+	printf("%s", command);
 }
 
 void parse_D(char * command) {
-
+	printf("%s", command);
 }
 
 void parse_line(char * command) {
@@ -92,42 +120,49 @@ void parse_line(char * command) {
 }
 
 int main(void){
-    printList(holdQueue1);
-    insertSJF(1, 1, 1, 5);
-    printList(holdQueue1);
-    insertSJF(1, 1, 1, 6);
-    printList(holdQueue1);
-    insertSJF(1, 1, 1, 4);
-    printList(holdQueue1);
-    insertSJF(1, 1, 1, 8);
-    printList(holdQueue1);
-    insertSJF(1, 1, 1, 7);
-    printList(holdQueue1);
-    insertSJF(1, 1, 1, 8);
-    printList(holdQueue1);
-    printList(holdQueue2);
-    insertFIFO(1, 1, 1, 5);
-    printList(holdQueue2);
-    insertFIFO(1, 1, 1, 6);
-    printList(holdQueue2);
-    insertFIFO(1, 1, 1, 4);
-    printList(holdQueue2);
-    insertFIFO(1, 1, 1, 8);
-    printList(holdQueue2);
-    insertFIFO(1, 1, 1, 7);
-    printList(holdQueue2);
-    insertFIFO(1, 1, 1, 8);
-    printList(holdQueue2);
-	printList(pop(holdQueue2));
-    printList(holdQueue2);
-    printList(holdQueue1);
-	printList(pop(holdQueue1));
-    printList(holdQueue1);
+    printList(hold_queue_1);
+    insertSJF(1, 1, 1, 1, 5, 1);
+    printList(hold_queue_1);
+    insertSJF(1, 2, 1, 1, 6, 1);
+    printList(hold_queue_1);
+    insertSJF(1, 3, 1, 1, 4, 1);
+    printList(hold_queue_1);
+    insertSJF(1, 4, 1, 1, 8, 1);
+    printList(hold_queue_1);
+    insertSJF(1, 5, 1, 1, 7, 1);
+    printList(hold_queue_1);
+    insertSJF(1, 6, 1, 1, 8, 1);
+    printList(hold_queue_1);
+    printList(hold_queue_2);
+    insertFIFO(1, 1, 1, 1, 5, 1);
+    printList(hold_queue_2);
+    insertFIFO(1, 2, 1, 1, 6, 1);
+    printList(hold_queue_2);
+    insertFIFO(1, 3, 1, 1, 4, 1);
+    printList(hold_queue_2);
+    insertFIFO(1, 4, 1, 1, 8, 1);
+    printList(hold_queue_2);
+    insertFIFO(1, 5, 1, 1, 7, 1);
+    printList(hold_queue_2);
+    insertFIFO(1, 6, 1, 1, 8, 1);
+    printList(hold_queue_2);
+	printList(pop(hold_queue_2));
+    printList(hold_queue_2);
+    printList(hold_queue_1);
+	printList(pop(hold_queue_1));
+    printList(hold_queue_1);
 
 	printf("Please input filename:\n");
 	scanf("%s", s_input);
 	open_file(s_input);
-	cur_length = next_line(cur_line);
-	parse_line(cur_line);
+	printList(submit_queue);
+	for (;;) {
+		cur_length = next_line(cur_line);
+		if (cur_length < 0) {
+			break;
+		}
+		parse_line(cur_line);
+	}
+	printList(submit_queue);
 	close_file();
 }
