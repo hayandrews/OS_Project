@@ -30,7 +30,7 @@ void open_file(char * filename) {
 	input = fopen(filename, "r");
 	if (input == NULL) {
 		perror("Invalid filename.\n");
-		close();
+		close_file();
 		exit(1);
 	}
 	else {

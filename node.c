@@ -165,3 +165,20 @@ void printList(struct Job *queue){
     }
     
 }
+
+void pop_sub() {
+	struct Job * cur_job = pop(submit_queue);
+	if (cur_job->mem_req < avail_mem) {
+		//insert into ready queue
+	}
+	else if (cur_job->queue_priority == 1) {
+		insertSJF(cur_job);
+	}
+	else if (cur_job->queue_priority == 2) {
+		insertFIFO(cur_job);
+	}
+	else {
+		perror("Job's priority does not match a hold queue.");
+		exit(1);
+	}
+}
