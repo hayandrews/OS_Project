@@ -182,4 +182,5 @@ int main(void){
 	}
 	printList(submit_queue);
 	close_file();
+    outputJSON();
 }

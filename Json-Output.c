@@ -6,9 +6,21 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 
 
 FILE *output;
+extern struct Job *hold_queue_1;
+extern struct Job *hold_queue_2;
+extern struct Job *submit_queue;
+extern struct Job *ready_queue;
+extern int main_memory;
+extern int avail_mem;
+extern int serial_devices;
+extern int time_quantum;
+extern int cur_time;
+extern int avail_dev;
+
 
 void outputJSON(){
     output = fopen("JSONtest.json", "w");
@@ -44,9 +56,4 @@ void outputJSON(){
     fputs("}",output);
     fclose(output);
 }
-
-int main(void){
-    outputJSON();
-}
-
 
