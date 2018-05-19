@@ -18,6 +18,10 @@ extern struct Job *holdQueue2;
 
 int sys_configs[4]; /*index 0 = start time, 1 = main memory, 
 					2 = serial devices, 3 = time quantum*/
+int start_time = -1;
+int main_memory = -1;
+int serial_devices = -1;
+int time_quantum = -1;
 
 void inc_com() {
 	perror("file has an incorrect command.");
@@ -31,12 +35,15 @@ https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 	int count = 0;
 	char * pch;
 	pch = strtok(command, " =CMSQ");
-	while (pch != NULL)
-	{
-		sys_configs[count] = atoi(pch);
-		count++;
-		pch = strtok(NULL, " =CMSQ");
-	}
+	start_time = atoi(pch);
+	pch = strtok(NULL, " =CMSQ");
+	main_memory = atoi(pch);
+	pch = strtok(NULL, " =CMSQ");
+	serial_devices = atoi(pch);
+	pch = strtok(NULL, " =CMSQ");
+	time_quantum = atoi(pch);
+
+	printf("start: %d\tmain: %d\tserial: %d\time: %d\n", start_time, main_memory, serial_devices, time_quantum);
 }
 
 void parse_A(char * command) {

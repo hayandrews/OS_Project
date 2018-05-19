@@ -18,6 +18,7 @@ struct Job
 
 struct Job *holdQueue1 = NULL;
 struct Job *holdQueue2 = NULL;
+struct Job *submit_queue = NULL;
 
 //Inserts Shortest Job at front of the list
 void insertSJF(int arr_t, int mem_r, int dev_r, int run_t) {
