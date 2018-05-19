@@ -56,7 +56,6 @@ int cur_length;                /* length for above string*/
  --------------------------------------------------------------------------------
  */
 
-//Inserts Shortest Job at front of the list
 void insertSJF(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
     struct Job *new_node = (struct Job*)malloc(sizeof(struct Job));
     new_node->arrive_time = arr_t;
@@ -98,6 +97,34 @@ void insertSJF(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_
     }
 }
 
+void insertSJF2(struct Job * node){
+    if (hold_queue_1 == NULL) {
+        hold_queue_1 = node;
+    } else if (node->run_time < hold_queue_1->run_time){
+        node->next = hold_queue_1;
+        hold_queue_1 = node;
+    } else{
+        struct Job *pointer = hold_queue_1;
+        while (pointer->next != NULL) {
+            if (node->run_time < pointer->next->run_time) {
+                break;
+            }
+            else {
+                pointer = pointer->next;
+            }
+        }
+        //If between two nodes, the node next is same as pointers next
+        //Then pointers next is then node
+        if (pointer->next != NULL) {
+            node->next = pointer->next;
+            pointer->next = node;
+        }
+        else { //pointer->next is null thus just add node as next
+            pointer->next = node;
+        }
+    }
+}
+
 void insertFIFO(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
     struct Job *new_node = (struct Job*)malloc(sizeof(struct Job));
     new_node->arrive_time = arr_t;
@@ -119,6 +146,19 @@ void insertFIFO(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue
             pointer = pointer->next;
         }
         pointer->next = new_node;
+    }
+}
+
+void insertFIFO2(struct Job **queue, struct Job * node) {
+    if (*queue == NULL) {
+        *queue = node;
+    }
+    else {
+        struct Job * pointer = *queue;
+        while (pointer->next != NULL) {
+            pointer = pointer->next;
+        }
+        pointer->next = node;
     }
 }
 
@@ -147,39 +187,13 @@ void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue
     }
 }
 
-struct Job * pop(struct Job *queue){
-    if (queue != NULL) {
-        struct Job *ret = (struct Job*)malloc(sizeof(struct Job));
-        ret->arrive_time = queue->arrive_time;
-        ret->job_num = queue->job_num;
-        ret->mem_req = queue->mem_req;
-        ret->dev_req = queue->dev_req;
-        ret->run_time = queue->run_time;
-        ret->queue_priority = queue->queue_priority;
-        ret->next = NULL;
-        ret->completion_time = queue->completion_time;
-        ret->dev_owned = queue->dev_owned;
-        if (queue->next == NULL) {
-            free(queue);
-            queue = NULL;
-        }
-        else {
-            struct Job *tmp = queue;
-            queue->arrive_time = tmp->arrive_time;
-            queue->job_num = tmp->job_num;
-            queue->mem_req = tmp->mem_req;
-            queue->dev_req = tmp->dev_req;
-            queue->run_time = tmp->run_time;
-            queue->queue_priority = tmp->queue_priority;
-            queue->next = tmp->next;
-            queue->completion_time = tmp->completion_time;
-            queue->dev_owned = tmp->dev_owned;
-            free(tmp);
-        }
-        return ret;
+struct Job * pop(struct Job **queue) {
+    struct Job *ret = *queue;
+    if (ret) {
+        *queue = ret->next;
     }
-    printf("Queue is empty");
-    return NULL;
+    ret->next = NULL;
+    return ret;
 }
 
 void printList(struct Job *queue){
@@ -198,23 +212,23 @@ void printList(struct Job *queue){
     
 }
 
-//void pop_sub() {
-//    struct Job * cur_job = pop(submit_queue);
-//    if (cur_job->mem_req < avail_mem) {
-//        //insert into ready queue
-//    }
-//    else if (cur_job->queue_priority == 1) {
-//        insertSJF(cur_job);
-//    }
-//    else if (cur_job->queue_priority == 2) {
-//        insertFIFO(cur_job);
-//    }
-//    else {
-//        perror("Job's priority does not match a hold queue.");
-//        exit(1);
-//    }
-//}
-
+void pop_sub() {
+    struct Job * cur_job = pop(&submit_queue);
+    insertFIFO2(&hold_queue_2, cur_job);
+    //if (cur_job->mem_req < avail_mem) {
+    //    //insert into ready queue
+    //}
+    //else if (cur_job->queue_priority == 1) {
+    //    //insertSJF(cur_job);
+    //}
+    //else if (cur_job->queue_priority == 2) {
+    //}
+    //else {
+    //    perror("Job's priority does not match a hold queue.");
+    //    exit(1);
+    //}
+    
+}
 /*
  --------------------------------------------------------------------------------
  File Functions
@@ -342,10 +356,6 @@ void inc_com() {
     exit(1);
 }
 
-void pop_sub(){
-    
-}
-
 void parse_C(char * command) {
     /*string parsing found at
      https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
@@ -446,50 +456,61 @@ void parse_line(char * command) {
 }
 
 int main(void){
-    printList(hold_queue_1);
-    insertSJF(1, 1, 1, 1, 5, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 2, 1, 1, 6, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 3, 1, 1, 4, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 4, 1, 1, 8, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 5, 1, 1, 7, 1);
-    printList(hold_queue_1);
-    insertSJF(1, 6, 1, 1, 8, 1);
-    printList(hold_queue_1);
-    printList(hold_queue_2);
-    insertFIFO(1, 1, 1, 1, 5, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 2, 1, 1, 6, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 3, 1, 1, 4, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 4, 1, 1, 8, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 5, 1, 1, 7, 1);
-    printList(hold_queue_2);
-    insertFIFO(1, 6, 1, 1, 8, 1);
-    printList(hold_queue_2);
-    printList(pop(hold_queue_2));
-    printList(hold_queue_2);
-    printList(hold_queue_1);
-    printList(pop(hold_queue_1));
-    printList(hold_queue_1);
+    //   printList(hold_queue_1);
+    //   insertSJF(1, 1, 1, 1, 5, 1);
+    //   printList(hold_queue_1);
+    //   insertSJF(1, 2, 1, 1, 6, 1);
+    //   printList(hold_queue_1);
+    //   insertSJF(1, 3, 1, 1, 4, 1);
+    //   printList(hold_queue_1);
+    //   insertSJF(1, 4, 1, 1, 8, 1);
+    //   printList(hold_queue_1);
+    //   insertSJF(1, 5, 1, 1, 7, 1);
+    //   printList(hold_queue_1);
+    //   insertSJF(1, 6, 1, 1, 8, 1);
+    //   printList(hold_queue_1);
+    //   printList(hold_queue_2);
+    //   insertFIFO(1, 1, 1, 1, 5, 1);
+    //   printList(hold_queue_2);
+    //printf("\t\tPOPPING\n");
+    //printList(pop(&hold_queue_2));
+    //printf("\t\tPOPPED\n");
+    //printList(hold_queue_2);
+    //   insertFIFO(1, 2, 1, 1, 6, 1);
+    //   printList(hold_queue_2);
+    //   insertFIFO(1, 3, 1, 1, 4, 1);
+    //   printList(hold_queue_2);
+    //   insertFIFO(1, 4, 1, 1, 8, 1);
+    //   printList(hold_queue_2);
+    //   insertFIFO(1, 5, 1, 1, 7, 1);
+    //   printList(hold_queue_2);
+    //   insertFIFO(1, 6, 1, 1, 8, 1);
+    //   printList(hold_queue_2);
+    //   printList(hold_queue_1);
+    //printf("\t\tPOPPING\n");
+    //printList(pop(&hold_queue_1));
+    //printf("\t\tPOPPED\n");
+    //   printList(hold_queue_1);
     
     printf("Please input filename:\n");
-     scanf("%s", s_input);
-     open_file(s_input);
-     printList(submit_queue);
-     for (;;) {
-     cur_length = next_line(cur_line);
-     if (cur_length < 0) {
-     break;
-     }
-     parse_line(cur_line);
-     }
-     printList(submit_queue);
-     close_file();
-    outputJSON();
+    scanf("%s", s_input);
+    open_file(s_input);
+    printList(submit_queue);
+    for (;;) {
+        cur_length = next_line(cur_line);
+        if (cur_length < 0) {
+            break;
+        }
+        parse_line(cur_line);
+    }
+    printList(submit_queue);
+    close_file();
+    for (int i = 0; i < 2; i++) {
+        pop_sub();
+    }
+    printf("\n\nfinished pop_sub\n");
+    printList(submit_queue);
+    printList(hold_queue_2);
+    
+    //outputJSON();
 }

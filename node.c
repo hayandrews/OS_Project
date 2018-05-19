@@ -68,6 +68,34 @@ void insertSJF(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_
 	}
 }
 
+void insertSJF2(struct Job * node){
+    if (hold_queue_1 == NULL) {
+        hold_queue_1 = node;
+    } else if (node->run_time < hold_queue_1->run_time){
+        node->next = hold_queue_1;
+        hold_queue_1 = node;
+    } else{
+        struct Job *pointer = hold_queue_1;
+        while (pointer->next != NULL) {
+            if (node->run_time < pointer->next->run_time) {
+                break;
+            }
+            else {
+                pointer = pointer->next;
+            }
+        }
+        //If between two nodes, the node next is same as pointers next
+        //Then pointers next is then node
+        if (pointer->next != NULL) {
+            node->next = pointer->next;
+            pointer->next = node;
+        }
+        else { //pointer->next is null thus just add node as next
+            pointer->next = node;
+        }
+    }
+}
+
 void insertFIFO(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
 	struct Job *new_node = (struct Job*)malloc(sizeof(struct Job));
 	new_node->arrive_time = arr_t;
