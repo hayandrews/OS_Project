@@ -25,13 +25,17 @@ int main_memory = -1;
 int avail_mem = -1;
 int serial_devices = -1;
 int time_quantum = -1;
+int cur_time = -1;
+int avail_dev = -1;
 
 void inc_com() {
 	perror("file has an incorrect command.");
 	exit(1);
 }
 
-void 
+void pop_sub{
+
+}
 
 void parse_C(char * command) {
 /*string parsing found at 
@@ -53,6 +57,8 @@ https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 	time_quantum = atoi(pch);
 
 	avail_mem = main_memory;
+	cur_time = start_time;
+	avail_dev = serial_devices;
 
 	printf("C:\tstart: %d\tmain: %d\tserial: %d\time: %d\n", start_time, 
 		main_memory, serial_devices, time_quantum);
