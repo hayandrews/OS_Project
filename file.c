@@ -26,6 +26,11 @@ int next_line(char * buffer) { /*uses buffer var to return value and returns
 	}
 }
 
+void close_file() {
+	fclose(input);
+	printf("Close successful.\n");
+}
+
 void open_file(char * filename) {
 	input = fopen(filename, "r");
 	if (input == NULL) {
@@ -36,9 +41,4 @@ void open_file(char * filename) {
 	else {
 		printf("Successfully opened %s\n", filename);
 	}
-}
-
-void close_file() {
-	fclose(input);
-	printf("Close successful.\n");
 }

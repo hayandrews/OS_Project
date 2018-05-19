@@ -169,7 +169,7 @@ int main(void){
 	printList(pop(hold_queue_1));
     printList(hold_queue_1);
 
-	printf("Please input filename:\n");
+	/*printf("Please input filename:\n");
 	scanf("%s", s_input);
 	open_file(s_input);
 	printList(submit_queue);
@@ -181,6 +181,6 @@ int main(void){
 		parse_line(cur_line);
 	}
 	printList(submit_queue);
-	close_file();
+	close_file();*/
     outputJSON();
 }

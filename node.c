@@ -132,7 +132,7 @@ struct Job * pop(struct Job *queue){
 			queue = NULL;
 		}
 		else {
-			struct Job *tmp = queue->next;
+			struct Job *tmp = queue;
 			queue->arrive_time = tmp->arrive_time;
 			queue->job_num = tmp->job_num;
 			queue->mem_req = tmp->mem_req;
@@ -166,19 +166,19 @@ void printList(struct Job *queue){
     
 }
 
-void pop_sub() {
-	struct Job * cur_job = pop(submit_queue);
-	if (cur_job->mem_req < avail_mem) {
-		//insert into ready queue
-	}
-	else if (cur_job->queue_priority == 1) {
-		insertSJF(cur_job);
-	}
-	else if (cur_job->queue_priority == 2) {
-		insertFIFO(cur_job);
-	}
-	else {
-		perror("Job's priority does not match a hold queue.");
-		exit(1);
-	}
-}
+//void pop_sub() {
+//	struct Job * cur_job = pop(submit_queue);
+//	if (cur_job->mem_req < avail_mem) {
+//		//insert into ready queue
+//	}
+//	else if (cur_job->queue_priority == 1) {
+//		insertSJF(cur_job);
+//	}
+//	else if (cur_job->queue_priority == 2) {
+//		insertFIFO(cur_job);
+//	}
+//	else {
+//		perror("Job's priority does not match a hold queue.");
+//		exit(1);
+//	}
+//}
