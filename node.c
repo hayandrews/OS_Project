@@ -18,6 +18,7 @@ struct Job
     struct Job *next;
 	int completion_time;
 	int dev_owned;
+	int time_left;
 };
 
 struct Job *hold_queue_1 = NULL;
@@ -30,7 +31,8 @@ struct Job *wait_queue = NULL;
 extern int avail_mem;
 extern int avail_dev;
 
-void insertSJF2(struct Job * node){
+/*used for inserting into hold_queue_2 only*/
+void insert_hold_2(struct Job * node){
 	//Empty queue make new_node the head
     if (hold_queue_1 == NULL) {
         hold_queue_1 = node;
@@ -61,6 +63,11 @@ void insertSJF2(struct Job * node){
     }
 }
 
+/*used for inserting into first-in-first-out queues:
+- hold_queue_2
+- ready_queue
+- wait_queue
+- complete_queue*/
 void insertFIFO2(struct Job **queue, struct Job * node) {
 	if (*queue == NULL) {
 		*queue = node;
@@ -74,6 +81,9 @@ void insertFIFO2(struct Job **queue, struct Job * node) {
 	}
 }
 
+/*Basically acts as constructor for jobs. Only place space should be malloced 
+for a job, initializes all the struct fields. Jobs automatically placed in 
+submit_queue.*/
 void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
 	struct Job *new_node = (struct Job*)malloc(sizeof(struct Job));
 	new_node->arrive_time = arr_t;
@@ -85,6 +95,7 @@ void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue
 	new_node->next = NULL;
 	new_node->completion_time = 0;
 	new_node->dev_owned = 0;
+	new_node->time_left = 0;
 	//If empty insert at head
 	if (submit_queue == NULL) {
 		submit_queue = new_node;
@@ -138,11 +149,11 @@ void pop_sub() {
 	for the job, the required main memory is allocated to the process, and the 
 	process is put in the Ready Queue.
 	Thus we chose to move things directly to ready when possible.*/
-	if (avail_mem >= cur_job->mem_req) {
+	/*if (avail_mem >= cur_job->mem_req) {
 		insert_ready(cur_job);
 	}
-	else if (cur_job->queue_priority == 1) {
-		insertSJF2(cur_job);
+	else*/ if (cur_job->queue_priority == 1) {
+		insert_hold_2(cur_job);
 	}
 	else if (cur_job->queue_priority == 2) {
 		insertFIFO2(&hold_queue_2, cur_job);
@@ -154,13 +165,18 @@ void pop_sub() {
 	
 }
 
-void fill_ready() {
+/*used when filling ready queue and when process releases devices*/
+void pop_wait() {
 	struct Job * cur_job = wait_queue;
 	while (cur_job != NULL && avail_dev >= cur_job->dev_owned) {
 		cur_job = cur_job->next;
 		insert_ready(pop(&wait_queue));
 	}
-	cur_job = hold_queue_1;
+}
+
+void fill_ready() {
+	pop_wait();
+	struct Job * cur_job = hold_queue_1;
 	while (cur_job != NULL && avail_mem >= cur_job->mem_req) {
 		cur_job = cur_job->next;
 		insert_ready(pop(&hold_queue_1));

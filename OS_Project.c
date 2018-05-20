@@ -18,6 +18,7 @@ extern struct Job *hold_queue_2;
 extern struct Job *submit_queue;
 extern struct Job *ready_queue;
 extern struct Job *complete_queue;
+extern struct Job *wait_queue;
 
 int sys_configs[4]; /*index 0 = start time, 1 = main memory, 
 					2 = serial devices, 3 = time quantum*/
@@ -128,6 +129,21 @@ void parse_line(char * command) {
 	}
 }
 
+void print_queues() {
+	printf("\nSubmit_queue\n");
+	printList(submit_queue);
+	printf("ready_queue\n");
+	printList(ready_queue);
+	printf("hold_queue_1\n");
+	printList(hold_queue_1);
+	printf("hold_queue_2\n");
+	printList(hold_queue_2);
+	printf("wait_queue\n");
+	printList(wait_queue);
+	printf("complete_queue\n");
+	printList(complete_queue);
+}
+
 int main(void){
 	printf("Please input filename:\n");
 	scanf("%s", s_input);
@@ -145,11 +161,11 @@ int main(void){
 	while (submit_queue != NULL) {
 		pop_sub();
 	}
-	printf("\n\nfinished pop_sub. submit then ready then hold 1 then hold 2\n");
-	printList(submit_queue);
-	printList(ready_queue);
-	printList(hold_queue_1);
-	printList(hold_queue_2);
-	printf("Available mem: %d\n", avail_mem);
+	insert_ready(pop(&hold_queue_1));
+	print_queues();
+	while (ready_queue != NULL) {
+		insert_fin(pop(&ready_queue));
+		print_queues();
+	}
     //outputJSON();
 }
