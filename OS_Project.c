@@ -17,6 +17,7 @@ extern struct Job *hold_queue_1;
 extern struct Job *hold_queue_2;
 extern struct Job *submit_queue;
 extern struct Job *ready_queue;
+extern struct Job *complete_queue;
 
 int sys_configs[4]; /*index 0 = start time, 1 = main memory, 
 					2 = serial devices, 3 = time quantum*/
@@ -55,9 +56,6 @@ https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 	avail_mem = main_memory;
 	cur_time = start_time;
 	avail_dev = serial_devices;
-
-	printf("C:\tstart: %d\tmain: %d\tserial: %d\time: %d\n", start_time, 
-		main_memory, serial_devices, time_quantum);
 }
 
 void parse_A(char * command) {
@@ -75,9 +73,6 @@ void parse_A(char * command) {
 	run_t = atoi(pch);
 	pch = strtok(NULL, " =AJMSRP");
 	queue_p = atoi(pch);
-
-	printf("A:\tarr_t: %d\tjob_n: %d\tmem_r: %d\tdev_r: %d\trun_t: %d\tqueue_p: %d\n", 
-		arr_t, job_n, mem_r, dev_r, run_t, queue_p);
 
 	if (mem_r > main_memory) {
 		printf("job requires %d memory, but system only has %d memory.\n", mem_r, main_memory);
@@ -101,6 +96,7 @@ void parse_L(char * command) {
 
 void parse_D(char * command) {
 	printf("%s", command);
+	//outputJSON();
 }
 
 void parse_line(char * command) {
@@ -133,61 +129,27 @@ void parse_line(char * command) {
 }
 
 int main(void){
- //   printList(hold_queue_1);
- //   insertSJF(1, 1, 1, 1, 5, 1);
- //   printList(hold_queue_1);
- //   insertSJF(1, 2, 1, 1, 6, 1);
- //   printList(hold_queue_1);
- //   insertSJF(1, 3, 1, 1, 4, 1);
- //   printList(hold_queue_1);
- //   insertSJF(1, 4, 1, 1, 8, 1);
- //   printList(hold_queue_1);
- //   insertSJF(1, 5, 1, 1, 7, 1);
- //   printList(hold_queue_1);
- //   insertSJF(1, 6, 1, 1, 8, 1);
- //   printList(hold_queue_1);
- //   printList(hold_queue_2);
- //   insertFIFO(1, 1, 1, 1, 5, 1);
- //   printList(hold_queue_2);
-	//printf("\t\tPOPPING\n");
-	//printList(pop(&hold_queue_2));
-	//printf("\t\tPOPPED\n");
-	//printList(hold_queue_2);
- //   insertFIFO(1, 2, 1, 1, 6, 1);
- //   printList(hold_queue_2);
- //   insertFIFO(1, 3, 1, 1, 4, 1);
- //   printList(hold_queue_2);
- //   insertFIFO(1, 4, 1, 1, 8, 1);
- //   printList(hold_queue_2);
- //   insertFIFO(1, 5, 1, 1, 7, 1);
- //   printList(hold_queue_2);
- //   insertFIFO(1, 6, 1, 1, 8, 1);
- //   printList(hold_queue_2);
- //   printList(hold_queue_1);
-	//printf("\t\tPOPPING\n");
-	//printList(pop(&hold_queue_1));
-	//printf("\t\tPOPPED\n");
- //   printList(hold_queue_1);
-
 	printf("Please input filename:\n");
 	scanf("%s", s_input);
 	open_file(s_input);
-	printList(submit_queue);
+	
 	for (;;) {
 		cur_length = next_line(cur_line);
-		if (cur_length < 0) {
-			break;
+		if (cur_length >= 0) {
+			parse_line(cur_line);
 		}
-		parse_line(cur_line);
+		else break;
 	}
 	printList(submit_queue);
 	close_file();
-	for (int i = 0; i < 2; i++) {
+	while (submit_queue != NULL) {
 		pop_sub();
 	}
-	printf("\n\nfinished pop_sub\n");
+	printf("\n\nfinished pop_sub. submit then ready then hold 1 then hold 2\n");
 	printList(submit_queue);
+	printList(ready_queue);
+	printList(hold_queue_1);
 	printList(hold_queue_2);
-
+	printf("Available mem: %d\n", avail_mem);
     //outputJSON();
 }
