@@ -29,12 +29,16 @@ struct Job
     struct Job *next;
     int completion_time;
     int dev_owned;
+    int time_left;
 };
 
 struct Job *hold_queue_1 = NULL;
 struct Job *hold_queue_2 = NULL;
 struct Job *submit_queue = NULL;
 struct Job *ready_queue;
+struct Job *complete_queue;
+struct Job *wait_queue;
+
 int sys_configs[4]; /*index 0 = start time, 1 = main memory,
                      2 = serial devices, 3 = time quantum*/
 int start_time = -1;
@@ -56,53 +60,16 @@ int cur_length;                /* length for above string*/
  --------------------------------------------------------------------------------
  */
 
-void insertSJF(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
-    struct Job *new_node = (struct Job*)malloc(sizeof(struct Job));
-    new_node->arrive_time = arr_t;
-    new_node->job_num = job_n;
-    new_node->mem_req = mem_r;
-    new_node->dev_req = dev_r;
-    new_node->run_time = run_t;
-    new_node->queue_priority = queue_p;
-    new_node->next = NULL;
-    new_node->completion_time = 0;
-    new_node->dev_owned = 0;
+/*used for inserting into hold_queue_2 only*/
+void insert_hold_2(struct Job * node){
     //Empty queue make new_node the head
     if (hold_queue_1 == NULL) {
-        hold_queue_1 = new_node;
-    }
-    else if (new_node->run_time < hold_queue_1->run_time) { //Else if less than head, make new head
-        new_node->next = hold_queue_1;
-        hold_queue_1 = new_node;
-    }
-    else { //Else iterate through the list
-        struct Job *pointer = hold_queue_1;
-        while (pointer->next != NULL) {
-            if (new_node->run_time < pointer->next->run_time) {
-                break;
-            }
-            else {
-                pointer = pointer->next;
-            }
-        }
-        //If between two nodes, the new_nodes next is same as pointers next
-        //Then pointers next is then new_node
-        if (pointer->next != NULL) {
-            new_node->next = pointer->next;
-            pointer->next = new_node;
-        }
-        else { //pointer->next is null thus just add new_node as next
-            pointer->next = new_node;
-        }
-    }
-}
-
-void insertSJF2(struct Job * node){
-    if (hold_queue_1 == NULL) {
         hold_queue_1 = node;
+        //Else if less than head, make new head
     } else if (node->run_time < hold_queue_1->run_time){
         node->next = hold_queue_1;
         hold_queue_1 = node;
+        //Else iterate through the list
     } else{
         struct Job *pointer = hold_queue_1;
         while (pointer->next != NULL) {
@@ -125,30 +92,11 @@ void insertSJF2(struct Job * node){
     }
 }
 
-void insertFIFO(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
-    struct Job *new_node = (struct Job*)malloc(sizeof(struct Job));
-    new_node->arrive_time = arr_t;
-    new_node->job_num = job_n;
-    new_node->mem_req = mem_r;
-    new_node->dev_req = dev_r;
-    new_node->run_time = run_t;
-    new_node->queue_priority = queue_p;
-    new_node->next = NULL;
-    new_node->completion_time = 0;
-    new_node->dev_owned = 0;
-    //If empty insert at head
-    if (hold_queue_2 == NULL) {
-        hold_queue_2 = new_node;
-    } else {
-        //Other wise add to the end of the list
-        struct Job *pointer = hold_queue_2;
-        while(pointer->next != NULL){
-            pointer = pointer->next;
-        }
-        pointer->next = new_node;
-    }
-}
-
+/*used for inserting into first-in-first-out queues:
+ - hold_queue_2
+ - ready_queue
+ - wait_queue
+ - complete_queue*/
 void insertFIFO2(struct Job **queue, struct Job * node) {
     if (*queue == NULL) {
         *queue = node;
@@ -162,6 +110,9 @@ void insertFIFO2(struct Job **queue, struct Job * node) {
     }
 }
 
+/*Basically acts as constructor for jobs. Only place space should be malloced
+ for a job, initializes all the struct fields. Jobs automatically placed in
+ submit_queue.*/
 void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
     struct Job *new_node = (struct Job*)malloc(sizeof(struct Job));
     new_node->arrive_time = arr_t;
@@ -173,6 +124,7 @@ void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue
     new_node->next = NULL;
     new_node->completion_time = 0;
     new_node->dev_owned = 0;
+    new_node->time_left = 0;
     //If empty insert at head
     if (submit_queue == NULL) {
         submit_queue = new_node;
@@ -212,22 +164,64 @@ void printList(struct Job *queue){
     
 }
 
+void insert_ready(struct Job * node) {
+    avail_mem -= node->mem_req;
+    avail_dev -= node->dev_owned;
+    insertFIFO2(&ready_queue, node);
+}
+
 void pop_sub() {
     struct Job * cur_job = pop(&submit_queue);
-    insertFIFO2(&hold_queue_2, cur_job);
-    //if (cur_job->mem_req < avail_mem) {
-    //    //insert into ready queue
-    //}
-    //else if (cur_job->queue_priority == 1) {
-    //    //insertSJF(cur_job);
-    //}
-    //else if (cur_job->queue_priority == 2) {
-    //}
-    //else {
-    //    perror("Job's priority does not match a hold queue.");
-    //    exit(1);
-    //}
+    /*in graph given there isn't an arrow from submit_queue to ready_queue but
+     it also says:
+     3. If there is enough main memory for the job, then a process is created
+     for the job, the required main memory is allocated to the process, and the
+     process is put in the Ready Queue.
+     Thus we chose to move things directly to ready when possible.*/
+    /*if (avail_mem >= cur_job->mem_req) {
+     insert_ready(cur_job);
+     }
+     else*/ if (cur_job->queue_priority == 1) {
+         insert_hold_2(cur_job);
+     }
+    else if (cur_job->queue_priority == 2) {
+        insertFIFO2(&hold_queue_2, cur_job);
+    }
+    else {
+        perror("Job's priority does not match a hold queue.");
+        exit(1);
+    }
     
+}
+
+/*used when filling ready queue and when process releases devices*/
+void pop_wait() {
+    struct Job * cur_job = wait_queue;
+    while (cur_job != NULL && avail_dev >= cur_job->dev_owned) {
+        cur_job = cur_job->next;
+        insert_ready(pop(&wait_queue));
+    }
+}
+
+void fill_ready() {
+    pop_wait();
+    struct Job * cur_job = hold_queue_1;
+    while (cur_job != NULL && avail_mem >= cur_job->mem_req) {
+        cur_job = cur_job->next;
+        insert_ready(pop(&hold_queue_1));
+    }
+    cur_job = hold_queue_2;
+    while (cur_job != NULL && avail_mem >= cur_job->mem_req) {
+        cur_job = cur_job->next;
+        insert_ready(pop(&hold_queue_2));
+    }
+}
+
+void insert_fin(struct Job * node) {
+    avail_mem += node->mem_req;
+    avail_dev += node->dev_owned;
+    insertFIFO2(&complete_queue, node);
+    fill_ready();
 }
 /*
  --------------------------------------------------------------------------------
@@ -351,6 +345,18 @@ void outputJSON(){
  --------------------------------------------------------------------------------
  */
 
+
+struct Job *safeJob(struct Job **queue){
+    struct Job *cur_job = *queue;
+    while(cur_job != NULL){
+        if (cur_job->mem_req < avail_mem && cur_job->dev_req < avail_dev){
+            break;
+        }
+        cur_job = cur_job->next;
+    }
+    return cur_job;
+}
+
 void inc_com() {
     perror("file has an incorrect command.");
     exit(1);
@@ -379,8 +385,7 @@ void parse_C(char * command) {
     cur_time = start_time;
     avail_dev = serial_devices;
     
-    printf("C:\tstart: %d\tmain: %d\tserial: %d\time: %d\n", start_time,
-           main_memory, serial_devices, time_quantum);
+    cur_line[0] = 'R';
 }
 
 void parse_A(char * command) {
@@ -399,9 +404,6 @@ void parse_A(char * command) {
     pch = strtok(NULL, " =AJMSRP");
     queue_p = atoi(pch);
     
-    printf("A:\tarr_t: %d\tjob_n: %d\tmem_r: %d\tdev_r: %d\trun_t: %d\tqueue_p: %d\n",
-           arr_t, job_n, mem_r, dev_r, run_t, queue_p);
-    
     if (mem_r > main_memory) {
         printf("job requires %d memory, but system only has %d memory.\n", mem_r, main_memory);
     }
@@ -412,18 +414,23 @@ void parse_A(char * command) {
         insert_sub(arr_t, job_n, mem_r, dev_r, run_t, queue_p);
     }
     
+    cur_line[0] = 'R';
 }
 
 void parse_Q(char * command) {
     printf("%s", command);
+    cur_line[0] = 'R';
 }
 
 void parse_L(char * command) {
     printf("%s", command);
+    cur_line[0] = 'R';
 }
 
 void parse_D(char * command) {
     printf("%s", command);
+    //outputJSON();
+    cur_line[0] = 'R';
 }
 
 void parse_line(char * command) {
@@ -431,86 +438,69 @@ void parse_line(char * command) {
      very first line */
     switch (command[0]) {
         case 'C':
-            printf("command is a System Configuration. \n");
-            parse_C(command);
-            break;
+        printf("command is a System Configuration. \n");
+        parse_C(command);
+        break;
         case 'A':
-            printf("command is a Job arrival. \n");
-            parse_A(command);
-            break;
+        printf("command is a Job arrival. \n");
+        parse_A(command);
+        break;
         case 'Q':
-            printf("command is a Request for devices. \n");
-            parse_Q(command);
-            break;
+        printf("command is a Request for devices. \n");
+        parse_Q(command);
+        break;
         case 'L':
-            printf("command is a Release for devices. \n");
-            parse_L(command);
-            break;
+        printf("command is a Release for devices. \n");
+        parse_L(command);
+        break;
         case 'D':
-            parse_D(command);
-            printf("command is a Display request. \n");
-            break;
+        parse_D(command);
+        printf("command is a Display request. \n");
+        break;
         default:
-            inc_com();
+        inc_com();
     }
 }
 
+void print_queues() {
+    printf("\nSubmit_queue\n");
+    printList(submit_queue);
+    printf("ready_queue\n");
+    printList(ready_queue);
+    printf("hold_queue_1\n");
+    printList(hold_queue_1);
+    printf("hold_queue_2\n");
+    printList(hold_queue_2);
+    printf("wait_queue\n");
+    printList(wait_queue);
+    printf("complete_queue\n");
+    printList(complete_queue);
+}
+
 int main(void){
-    //   printList(hold_queue_1);
-    //   insertSJF(1, 1, 1, 1, 5, 1);
-    //   printList(hold_queue_1);
-    //   insertSJF(1, 2, 1, 1, 6, 1);
-    //   printList(hold_queue_1);
-    //   insertSJF(1, 3, 1, 1, 4, 1);
-    //   printList(hold_queue_1);
-    //   insertSJF(1, 4, 1, 1, 8, 1);
-    //   printList(hold_queue_1);
-    //   insertSJF(1, 5, 1, 1, 7, 1);
-    //   printList(hold_queue_1);
-    //   insertSJF(1, 6, 1, 1, 8, 1);
-    //   printList(hold_queue_1);
-    //   printList(hold_queue_2);
-    //   insertFIFO(1, 1, 1, 1, 5, 1);
-    //   printList(hold_queue_2);
-    //printf("\t\tPOPPING\n");
-    //printList(pop(&hold_queue_2));
-    //printf("\t\tPOPPED\n");
-    //printList(hold_queue_2);
-    //   insertFIFO(1, 2, 1, 1, 6, 1);
-    //   printList(hold_queue_2);
-    //   insertFIFO(1, 3, 1, 1, 4, 1);
-    //   printList(hold_queue_2);
-    //   insertFIFO(1, 4, 1, 1, 8, 1);
-    //   printList(hold_queue_2);
-    //   insertFIFO(1, 5, 1, 1, 7, 1);
-    //   printList(hold_queue_2);
-    //   insertFIFO(1, 6, 1, 1, 8, 1);
-    //   printList(hold_queue_2);
-    //   printList(hold_queue_1);
-    //printf("\t\tPOPPING\n");
-    //printList(pop(&hold_queue_1));
-    //printf("\t\tPOPPED\n");
-    //   printList(hold_queue_1);
-    
     printf("Please input filename:\n");
     scanf("%s", s_input);
     open_file(s_input);
-    printList(submit_queue);
+    cur_length = next_line(cur_line);
     for (;;) {
-        cur_length = next_line(cur_line);
-        if (cur_length < 0) {
-            break;
+        if (cur_line[0] == 'R') {
+            cur_length = next_line(cur_line);
         }
-        parse_line(cur_line);
+        if (cur_length >= 0) {
+            parse_line(cur_line);
+        }
+        else break;
     }
     printList(submit_queue);
     close_file();
-    for (int i = 0; i < 2; i++) {
+    while (submit_queue != NULL) {
         pop_sub();
     }
-    printf("\n\nfinished pop_sub\n");
-    printList(submit_queue);
-    printList(hold_queue_2);
-    
+    insert_ready(pop(&hold_queue_1));
+    print_queues();
+    while (ready_queue != NULL) {
+        insert_fin(pop(&ready_queue));
+        print_queues();
+    }
     //outputJSON();
 }
