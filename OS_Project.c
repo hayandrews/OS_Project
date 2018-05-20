@@ -57,6 +57,8 @@ https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 	avail_mem = main_memory;
 	cur_time = start_time;
 	avail_dev = serial_devices;
+
+	cur_line[0] = 'R';
 }
 
 void parse_A(char * command) {
@@ -85,19 +87,23 @@ void parse_A(char * command) {
 		insert_sub(arr_t, job_n, mem_r, dev_r, run_t, queue_p);
 	}
 
+	cur_line[0] = 'R';
 }
 
 void parse_Q(char * command) {
 	printf("%s", command);
+	cur_line[0] = 'R';
 }
 
 void parse_L(char * command) {
 	printf("%s", command);
+	cur_line[0] = 'R';
 }
 
 void parse_D(char * command) {
 	printf("%s", command);
 	//outputJSON();
+	cur_line[0] = 'R';
 }
 
 void parse_line(char * command) {
@@ -148,9 +154,11 @@ int main(void){
 	printf("Please input filename:\n");
 	scanf("%s", s_input);
 	open_file(s_input);
-	
+	cur_length = next_line(cur_line);
 	for (;;) {
-		cur_length = next_line(cur_line);
+		if (cur_line[0] == 'R') {
+			cur_length = next_line(cur_line);
+		}
 		if (cur_length >= 0) {
 			parse_line(cur_line);
 		}
