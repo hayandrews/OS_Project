@@ -1,25 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-struct Job
-{
-	/*
-	A 10 J=1 M=5 S=4 R=3 P=1
-	The example above states that job number 1 with priority 1 arrives at time 10, requires 5 units
-	of main memory, holds no more than 4 devices at any point during execution(max demand), and
-	runs for 3 units of time
-	*/
-	int arrive_time;
-	int job_num;
-	int mem_req;
-	int dev_req;
-	int run_time;
-	int queue_priority;
-    struct Job *next;
-	int completion_time;
-	int dev_owned;
-	int time_left;
-};
+#include "node.h"
 
 struct Job *hold_queue_1 = NULL;
 struct Job *hold_queue_2 = NULL;

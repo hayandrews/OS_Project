@@ -7,6 +7,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "node.h"
+#include "file.h"
+#include "Json-Output.h"
 
 #define STRING_SIZE 1024
 
@@ -165,6 +168,7 @@ int main(void){
 		else break;
 	}
 	printList(submit_queue);
+	printf("first arrival: %d\n", submit_queue->arrive_time);
 	close_file();
 	while (submit_queue != NULL) {
 		pop_sub();

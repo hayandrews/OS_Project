@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "Json-Output.h"
+#include "node.h"
 
 
 FILE *output;

@@ -6,6 +6,7 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
+#include "file.h"
 
 #define STRING_SIZE 1024
 
