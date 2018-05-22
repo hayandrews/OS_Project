@@ -165,6 +165,8 @@ void fill_ready() {
 }
 
 void insert_fin(struct Job * node) {
+	printf("completing: ");
+	printList(node);
 	avail_mem += node->mem_req;
 	avail_dev += node->dev_owned;
 	insertFIFO2(&complete_queue, node);

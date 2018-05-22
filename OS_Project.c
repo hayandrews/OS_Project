@@ -127,7 +127,13 @@ void parse_L(char * command) {
 
 void parse_D(char * command) {
 	printf("%s", command);
-	//outputJSON();
+	int arr_t;
+	char * pch;
+	pch = strtok(command, " =D");
+	arr_t = atoi(pch);
+	if (cur_time >= arr_t) {
+		//outputJSON();
+	}
 	cur_line[0] = 'R';
 }
 
@@ -161,29 +167,29 @@ void parse_line(char * command) {
 }
 
 void print_queues() {
-	printf("PRINTING QUEUES\n");
+	printf("\tPRINTING QUEUES\n");
 	if (submit_queue != NULL) {
-		printf("Submit_queue\n");
+		printf("\tSubmit_queue: ");
 		printList(submit_queue);
 	}
 	if (ready_queue != NULL) {
-		printf("ready_queue\n");
+		printf("\tready_queue: ");
 		printList(ready_queue);
 	}
 	if (hold_queue_1 != NULL) {
-		printf("hold_queue_1\n");
+		printf("\thold_queue_1: ");
 		printList(hold_queue_1);
 	}
 	if (hold_queue_2 != NULL) {
-		printf("hold_queue_2\n");
+		printf("\thold_queue_2: ");
 		printList(hold_queue_2);
 	}
 	if (wait_queue != NULL) {
-		printf("wait_queue\n");
+		printf("\twait_queue: ");
 		printList(wait_queue);
 	}
 	if (complete_queue != NULL) {
-		printf("complete_queue\n");
+		printf("\tcomplete_queue: ");
 		printList(complete_queue);
 	}
 	fflush(stdout);
@@ -204,14 +210,17 @@ int main(void){
 	open_file(s_input);
 	cur_line[0] = 'R';
 	for (;;) {
-		printf("\n\n\nNEW ITERATION\t\tcur_line[0] = %c\n", cur_line[0]);
-		/*if ready queue != NULL do CPU stuff*/
+		printf("\n\n\nNEW ITERATION\n");
+		print_sys_vars();
+		print_queues();
+		printf("STARTING INTERNAL\n");
+
+		/*internal event*/
 		if (ready_queue != NULL) {
+			printf("Loading CPU....\n");
 			CPU = pop(&ready_queue);
-			printf("CPU: \n");
+			printf("CPU: ");
 			printList(CPU);
-			printf("Ready Queue: \n");
-			printList(ready_queue);
 			if (CPU->time_left - time_quantum < 0) {
 				CPU->time_left = 0;
 				//cur_time += (time_quantum - CPU->time_left);
@@ -221,7 +230,6 @@ int main(void){
 				CPU->time_left = 0;
 				//cur_time += time_quantum;
 				insert_fin(CPU);
-
 			}
 			else {
 				CPU->time_left -= time_quantum;
@@ -229,23 +237,22 @@ int main(void){
 				insertFIFO2(&ready_queue, CPU);
 			}
 			//CPU->time_left -= time_quantum;
-			//insertFIFO2(&ready_queue, CPU);
 			CPU = NULL;
-			printf("Ready Queue after insert: \n");
-			printList(ready_queue);
 		}
 
-		/* if system ready for next line, read in next line*/
+		printf("DONE INTERNAL\n");
+		print_sys_vars();
+		print_queues();
+		printf("STARTING EXTERNAL\n");
+
+		/*external event*/
 		if (cur_line[0] == 'R') {
 			cur_length = next_line(cur_line);
 		}
-		printf("After cur_line[0]\tcur_line[0] = %c\n", cur_line[0]);
+
 		/* if system just read in a new line, parse that line else break*/
 		if (cur_line[0] != 'R') {
 			parse_line(cur_line);
-			printf("current line parsed\n");
-			print_sys_vars();
-			print_queues();
 			if (submit_queue != NULL && cur_time >= submit_queue->arrive_time) {
 				pop_sub();
 				printf("popped submit queue\n");
@@ -253,16 +260,30 @@ int main(void){
 			}
 		}
 		else {
-			if (ready_queue == NULL)
-			break;
+			if (cur_line[0] != 'R') {
+				printf("current line isn't done yet.\n");
+			}
+			else if (ready_queue != NULL) {
+				printf("ready queue still has jobs.\n");
+			}
+			else if (wait_queue != NULL) {
+				printf("wait queue still has processes\n");
+			}
+			else if (hold_queue_1 != NULL) {
+				printf("hold queue 1 still has jobs.\n");
+			}
+			else if (hold_queue_2 != NULL) {
+				printf("hold queue 2 still has jobs.\n");
+			}
+			else {
+				break;
+			}
 		}
-		
-
-
-
-
 
 		cur_time += time_quantum;
+		printf("DONE EXTERNAL\n");
+		print_sys_vars();
+		print_queues();
 	}
 
 	/*printList(submit_queue);
