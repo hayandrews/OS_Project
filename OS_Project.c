@@ -23,8 +23,8 @@ extern struct Job *ready_queue;
 extern struct Job *complete_queue;
 extern struct Job *wait_queue;
 
-int sys_configs[4]; /*index 0 = start time, 1 = main memory, 
-					2 = serial devices, 3 = time quantum*/
+struct Job *CPU;
+
 int start_time = -1;
 int main_memory = -1;
 int avail_mem = -1;
@@ -139,35 +139,91 @@ void parse_line(char * command) {
 }
 
 void print_queues() {
-	printf("\nSubmit_queue\n");
-	printList(submit_queue);
-	printf("ready_queue\n");
-	printList(ready_queue);
-	printf("hold_queue_1\n");
-	printList(hold_queue_1);
-	printf("hold_queue_2\n");
-	printList(hold_queue_2);
-	printf("wait_queue\n");
-	printList(wait_queue);
-	printf("complete_queue\n");
-	printList(complete_queue);
+	printf("PRINTING QUEUES\n");
+	if (submit_queue != NULL) {
+		printf("Submit_queue\n");
+		printList(submit_queue);
+	}
+	if (ready_queue != NULL) {
+		printf("ready_queue\n");
+		printList(ready_queue);
+	}
+	if (hold_queue_1 != NULL) {
+		printf("hold_queue_1\n");
+		printList(hold_queue_1);
+	}
+	if (hold_queue_2 != NULL) {
+		printf("hold_queue_2\n");
+		printList(hold_queue_2);
+	}
+	if (wait_queue != NULL) {
+		printf("wait_queue\n");
+		printList(wait_queue);
+	}
+	if (complete_queue != NULL) {
+		printf("complete_queue\n");
+		printList(complete_queue);
+	}
+	fflush(stdout);
+}
+
+void print_sys_vars() {
+	printf("\tmain_mem: %d", main_memory);
+	printf("\tavail_mem: %d", avail_mem);
+	printf("\tserial_dev: %d", serial_devices);
+	printf("\tquantum: %d", time_quantum);
+	printf("\tcur_time: %d", cur_time);
+	printf("\tavail_dev: %d\n", avail_dev);
 }
 
 int main(void){
 	printf("Please input filename:\n");
 	scanf("%s", s_input);
 	open_file(s_input);
-	cur_length = next_line(cur_line);
+	cur_line[0] = 'R';
 	for (;;) {
+		printf("\n\n\nNEW ITERATION\t\tcur_line[0] = %c\n", cur_line[0]);
+		/*if ready queue != NULL do CPU stuff*/
+		/*if (ready_queue != NULL) {
+			CPU = pop(&ready_queue);
+			printf("CPU: \n");
+			printList(CPU);
+			printf("Ready Queue: \n");
+			printList(ready_queue);
+			CPU->time_left -= time_quantum;
+
+		}*/
+
+		/* if system ready for next line, read in next line*/
 		if (cur_line[0] == 'R') {
 			cur_length = next_line(cur_line);
 		}
-		if (cur_length >= 0) {
+		printf("After cur_line[0]\tcur_line[0] = %c\n", cur_line[0]);
+		/* if system just read in a new line, parse that line else break*/
+		if (cur_line[0] != 'R') {
 			parse_line(cur_line);
+			printf("current line parsed\n");
+			print_sys_vars();
+			print_queues();
+			if (submit_queue != NULL && cur_time >= submit_queue->arrive_time) {
+				pop_sub();
+				printf("popped submit queue\n");
+				print_queues();
+			}
 		}
-		else break;
+		else {
+			break;
+		}
+		
+
+
+
+
+
+		cur_time += time_quantum;
 	}
-	printList(submit_queue);
+
+	/*printList(submit_queue);
 	printf("first arrival: %d\n", submit_queue->arrive_time);
 	close_file();
 	while (submit_queue != NULL) {
@@ -178,6 +234,6 @@ int main(void){
 	while (ready_queue != NULL) {
 		insert_fin(pop(&ready_queue));
 		print_queues();
-	}
+	}*/
     //outputJSON();
 }

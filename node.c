@@ -130,10 +130,10 @@ void pop_sub() {
 	for the job, the required main memory is allocated to the process, and the 
 	process is put in the Ready Queue.
 	Thus we chose to move things directly to ready when possible.*/
-	/*if (avail_mem >= cur_job->mem_req) {
+	if (avail_mem >= cur_job->mem_req) {
 		insert_ready(cur_job);
 	}
-	else*/ if (cur_job->queue_priority == 1) {
+	else if (cur_job->queue_priority == 1) {
 		insert_hold_2(cur_job);
 	}
 	else if (cur_job->queue_priority == 2) {
@@ -151,13 +151,17 @@ void pop_wait() {
 	struct Job * cur_job = wait_queue;
 	while (cur_job != NULL && avail_dev >= cur_job->dev_owned) {
 		cur_job = cur_job->next;
-		insert_ready(pop(&wait_queue));
+		insertFIFO2(&ready_queue, pop(&wait_queue));
 	}
 }
 
 void fill_ready() {
-	pop_wait();
-	struct Job * cur_job = hold_queue_1;
+	struct Job * cur_job = wait_queue;
+	while (cur_job != NULL && avail_dev >= cur_job->dev_owned) {
+		cur_job = cur_job->next;
+		insertFIFO2(&ready_queue, pop(&wait_queue));
+	}
+	cur_job = hold_queue_1;
 	while (cur_job != NULL && avail_mem >= cur_job->mem_req) {
 		cur_job = cur_job->next;
 		insert_ready(pop(&hold_queue_1));
