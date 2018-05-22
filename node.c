@@ -76,7 +76,7 @@ void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue
 	new_node->next = NULL;
 	new_node->completion_time = 0;
 	new_node->dev_owned = 0;
-	new_node->time_left = 0;
+	new_node->time_left = run_t;
 	//If empty insert at head
 	if (submit_queue == NULL) {
 		submit_queue = new_node;
@@ -107,7 +107,7 @@ void printList(struct Job *queue){
     } else{
         while(pointer != NULL){
             printf("{%d,%d,%d,%d,%d,%d} --> ",pointer->arrive_time, pointer->job_num, 
-				pointer->mem_req, pointer->dev_req, pointer->run_time, 
+				pointer->mem_req, pointer->dev_req, pointer->time_left, 
 				pointer->queue_priority);
             pointer = pointer->next;
         }
@@ -146,15 +146,6 @@ void pop_sub() {
 	
 }
 
-/*used when filling ready queue and when process releases devices*/
-void pop_wait() {
-	struct Job * cur_job = wait_queue;
-	while (cur_job != NULL && avail_dev >= cur_job->dev_owned) {
-		cur_job = cur_job->next;
-		insertFIFO2(&ready_queue, pop(&wait_queue));
-	}
-}
-
 void fill_ready() {
 	struct Job * cur_job = wait_queue;
 	while (cur_job != NULL && avail_dev >= cur_job->dev_owned) {
@@ -178,4 +169,16 @@ void insert_fin(struct Job * node) {
 	avail_dev += node->dev_owned;
 	insertFIFO2(&complete_queue, node);
 	fill_ready();
+}
+
+/*called when a command comes in from the file.
+gives devices numbered to the job specified.*/
+void give_dev(int job_num, int dev_num) {
+	printf("giving job %d %d devices.\n", job_num, dev_num);
+}
+
+/*called when a command comes in from the file.
+releases devices numbered to the job specified.*/
+void take_dev(int job_num, int dev_num) {
+	printf("releasing %d devices from job %d.\n", dev_num, job_num);
 }

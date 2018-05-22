@@ -95,12 +95,34 @@ void parse_A(char * command) {
 
 void parse_Q(char * command) {
 	printf("%s", command);
-	cur_line[0] = 'R';
+	int arr_t, job_n, dev_r;
+	char * pch;
+	pch = strtok(command, " =QJD");
+	arr_t = atoi(pch);
+	if (cur_time >= arr_t) {
+		pch = strtok(NULL, " =QJD");
+		job_n = atoi(pch);
+		pch = strtok(NULL, " =QJD");
+		dev_r = atoi(pch);
+		give_dev(job_n, dev_r);
+		cur_line[0] = 'R';
+	}
 }
 
 void parse_L(char * command) {
 	printf("%s", command);
-	cur_line[0] = 'R';
+	int arr_t, job_n, dev_r;
+	char * pch;
+	pch = strtok(command, " =LJD");
+	arr_t = atoi(pch);
+	if (cur_time >= arr_t) {
+		pch = strtok(NULL, " =LJD");
+		job_n = atoi(pch);
+		pch = strtok(NULL, " =LJD");
+		dev_r = atoi(pch);
+		take_dev(job_n, dev_r);
+		cur_line[0] = 'R';
+	}
 }
 
 void parse_D(char * command) {
@@ -184,15 +206,18 @@ int main(void){
 	for (;;) {
 		printf("\n\n\nNEW ITERATION\t\tcur_line[0] = %c\n", cur_line[0]);
 		/*if ready queue != NULL do CPU stuff*/
-		/*if (ready_queue != NULL) {
+		if (ready_queue != NULL) {
 			CPU = pop(&ready_queue);
 			printf("CPU: \n");
 			printList(CPU);
 			printf("Ready Queue: \n");
 			printList(ready_queue);
 			CPU->time_left -= time_quantum;
-
-		}*/
+			insertFIFO2(&ready_queue, CPU);
+			CPU = NULL;
+			printf("Ready Queue after insert: \n");
+			printList(ready_queue);
+		}
 
 		/* if system ready for next line, read in next line*/
 		if (cur_line[0] == 'R') {
