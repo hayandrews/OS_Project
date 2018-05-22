@@ -212,8 +212,24 @@ int main(void){
 			printList(CPU);
 			printf("Ready Queue: \n");
 			printList(ready_queue);
-			CPU->time_left -= time_quantum;
-			insertFIFO2(&ready_queue, CPU);
+			if (CPU->time_left - time_quantum < 0) {
+				CPU->time_left = 0;
+				//cur_time += (time_quantum - CPU->time_left);
+				insert_fin(CPU);
+			}
+			else if (CPU->time_left - time_quantum == 0) {
+				CPU->time_left = 0;
+				//cur_time += time_quantum;
+				insert_fin(CPU);
+
+			}
+			else {
+				CPU->time_left -= time_quantum;
+				//cur_time += time_quantum;
+				insertFIFO2(&ready_queue, CPU);
+			}
+			//CPU->time_left -= time_quantum;
+			//insertFIFO2(&ready_queue, CPU);
 			CPU = NULL;
 			printf("Ready Queue after insert: \n");
 			printList(ready_queue);
@@ -237,6 +253,7 @@ int main(void){
 			}
 		}
 		else {
+			if (ready_queue == NULL)
 			break;
 		}
 		

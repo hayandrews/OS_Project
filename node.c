@@ -168,7 +168,6 @@ void insert_fin(struct Job * node) {
 	avail_mem += node->mem_req;
 	avail_dev += node->dev_owned;
 	insertFIFO2(&complete_queue, node);
-	fill_ready();
 }
 
 /*called when a command comes in from the file.
