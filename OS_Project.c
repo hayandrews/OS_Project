@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "node.h"
 #include "file.h"
 #include "Json-Output.h"
@@ -12,6 +13,7 @@ char s_input[STRING_SIZE];	/* input file name */
 char cur_line[STRING_SIZE]; /* current line in file*/
 int cur_length;				/* length for above string*/
 int i;						/* for use in for loops*/
+bool flag = true;			/* too tired to explain*/
 
 /* hold queues are for jobs that are waiting for system memory */
 extern struct Job *hold_queue_1;
@@ -53,18 +55,13 @@ void print_state() {
 	*/
 }
 
-/* called by parse_line when a C command is read from file.
-- if initialization has already happened, does nothing.
+/* called by main to parse initial C command
 - initializes start_time, main_memory, serial_devices, time_quantum to input
 - sets avail_mem, cur_time, avail_dev*/
 void parse_C(char * command) {
 /*string parsing found at 
 https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 */
-	if (start_time > -1) { /* Checks for a second C command*/
-		return;
-	}
-
 	char * pch;
 	pch = strtok(command, " =CMSQ");
 	start_time = atoi(pch);
@@ -119,25 +116,28 @@ void parse_A(char * command) {
 - checks CPU to make sure job requesting devices is in CPU
    - dumps if it doesn't
    - adds to job in CPU if it is*/
-void parse_Q(char * command) {
-	printf("%s", command);
+void parse_Q(char * command, int time) {
+	char com[STRING_SIZE];
+	for (int j = 0; j < cur_length; j++) {
+		com[j] = command[j];
+	}
 	int arr_t, job_n, dev_r;
 	char * pch;
-	pch = strtok(command, " =QJD");
+	pch = strtok(com, " =QJD");
 	arr_t = atoi(pch);
-	if (cur_time >= arr_t) {
-		pch = strtok(NULL, " =QJD");
-		job_n = atoi(pch);
-		if (CPU && CPU->job_num == job_n) {
-			pch = strtok(NULL, " =QJD");
-			dev_r = atoi(pch);
-			CPU->dev_owned += dev_r;
-		}
-		else {
-			printf("Job requesting devices is not on the CPU.\n");
-		}
-		cur_line[0] = 'R';
+	pch = strtok(NULL, " =QJD");
+	job_n = atoi(pch);
+	pch = strtok(NULL, " =QJD");
+	dev_r = atoi(pch);
+	if (time < arr_t) return; //too soon, don't run command
+	if (CPU && CPU->job_num == job_n && CPU->dev_req >= dev_r) {
+		CPU->dev_owned += dev_r;
+		avail_dev -= dev_r;
 	}
+	else {
+		printf("Job requesting devices is not on the CPU.\n");
+	}
+	cur_line[0] = 'R';
 }
 
 /* called by parse_line when an L command is read from file.
@@ -145,25 +145,34 @@ void parse_Q(char * command) {
 - checks CPU to make sure job releasing devices is in CPU
    - dumps if it doesn't
    - takes from job in CPU if it is*/
-void parse_L(char * command) {
-	printf("%s", command);
+void parse_L(char * command, int time) {
+	char com[STRING_SIZE];
+	for (int j = 0; j < cur_length; j++) {
+		com[j] = command[j];
+	}
 	int arr_t, job_n, dev_r;
 	char * pch;
-	pch = strtok(command, " =LJD");
+	pch = strtok(com, " =LJD");
 	arr_t = atoi(pch);
-	if (cur_time >= arr_t) {
-		pch = strtok(NULL, " =LJD");
-		job_n = atoi(pch);
-		if (CPU && CPU->job_num == job_n) {
-			pch = strtok(NULL, " =LJD");
-			dev_r = atoi(pch);
-			CPU->dev_owned -= dev_r;
+	pch = strtok(NULL, " =LJD");
+	job_n = atoi(pch);
+	pch = strtok(NULL, " =LJD");
+	dev_r = atoi(pch);
+	if (time < arr_t) return; //too soon, don't run command
+	if (CPU && CPU->job_num == job_n) {
+		if (CPU->dev_owned < dev_r) {
+			avail_dev += CPU->dev_owned;
+			CPU->dev_owned = 0;
 		}
 		else {
-			printf("Job releasing devices is not on the CPU.\n");
+			CPU->dev_owned -= dev_r;
+			avail_dev += dev_r;
 		}
-		cur_line[0] = 'R';
 	}
+	else {
+		printf("Job releasing devices is not on the CPU.\n");
+	}
+	cur_line[0] = 'R';
 }
 
 /* called by parse_line when a D command is read from file.
@@ -171,7 +180,6 @@ void parse_L(char * command) {
    - unless arrival time is 9999
 - outputs a Json file and prints the state*/
 void parse_D(char * command) {
-	printf("%s", command);
 	int arr_t;
 	char * pch;
 	pch = strtok(command, " =D");
@@ -183,36 +191,6 @@ void parse_D(char * command) {
 	}
 	else if (arr_t == 9999) {
 		cur_line[0] = 'R';
-	}
-}
-
-/* checks if command passed in is NULL. If not, it calls the various parse 
-functions. Incorrect letters are also handled.*/
-void parse_line(char * command) {
-	if (!command) {
-		return;
-	}
-	switch (command[0]) {
-	case 'C':
-		printf("command is a System Configuration. \n");
-		parse_C(command);
-		break;
-	case 'A':
-		printf("command is a Job arrival. \n");
-		parse_A(command);
-		break;
-	case 'Q':
-		printf("command is a Request for devices. \n");
-		parse_Q(command);
-		break;
-	case 'L':
-		printf("command is a Release for devices. \n");
-		parse_L(command);
-		break;
-	case 'D':
-		parse_D(command);
-		printf("command is a Display request. \n");
-		break;
 	}
 }
 
@@ -260,43 +238,57 @@ int main(void){
 	printf("Please input filename:\n");
 	scanf("%s", s_input);
 	open_file(s_input);
-	cur_line[0] = 'R'; //cur_line is ready for input
+	cur_length = next_line(cur_line); //loading C command
+	parse_C(cur_line); // parsing initial command
+	print_sys_vars();
 	for (;;) {
 		printf("\n\n\nNEW ITERATION\n");
-		print_sys_vars();
-		print_queues();
 		printf("STARTING INTERNAL\n");
 
 		/*internal event*/
-		if (ready_queue != NULL) {
-			printf("Loading CPU....\n");
-			CPU = pop(&ready_queue);
-			printf("CPU: ");
-			printList(CPU);
-			if (CPU->time_left - time_quantum < 0) {
-				CPU->time_left = 0;
-				//cur_time += (time_quantum - CPU->time_left);
-				//need to put completion time
-				insert_fin(CPU);
-				//go to external loop
+		if (ready_queue) CPU = pop(&ready_queue);
+		else printf("ready_queue empty.\n");
+		/*we make the assumption that for instance if cur_time = 1, and i = 3, 
+		the work being done is for time unit 4*/
+		for (i = 0; i < time_quantum && flag; i++) {
+			if (cur_line[0] == 'R') cur_length = next_line(cur_line);
+			printf("\tin iteration %d, passing in %d cur_line reads in as %s", i, cur_time + i, cur_line);
+			if (CPU) {
+				printf("\tCPU: ");
+				printList(CPU);
 			}
-			else if (CPU->time_left - time_quantum == 0) {
-				CPU->time_left = 0;
-				//cur_time += time_quantum;
-				//need to put completion time
-				insert_fin(CPU);
-				//go to external loop
+			else printf("CPU empty.\n");
+			if (cur_line[0] == 'Q') {
+				parse_Q(cur_line, cur_time + i);
+				if (cur_line[0] == 'R') {//if command Q ran, it interrupted
+					flag = false;
+				}
 			}
-			else {
-				
-				CPU->time_left -= time_quantum;
-				//cur_time += time_quantum;
-				//would be outside of internal loop
-				insertFIFO2(&ready_queue, CPU);
+			else if (cur_line[0] == 'L') {
+				parse_L(cur_line, cur_time+i);
+				if (cur_line[0] == 'R') {//if command L ran, it interrupted
+					flag = false;
+				}
 			}
-			//CPU->time_left -= time_quantum;
-			CPU = NULL;
+			else if (cur_line[0] == 'A'){
+				parse_A(cur_line);		//store in submit queue till it arrives
+			}
+			if (CPU) {
+				CPU->time_left--;
+				if (CPU->time_left <= 0) {
+					insert_fin(CPU);
+					CPU->completion_time = cur_time + i + 1;
+					flag = false;
+					CPU = NULL;
+				}
+			}
 		}
+		flag = true;
+		if (CPU)
+			insertFIFO2(&ready_queue, CPU);
+		CPU = NULL;
+		cur_time += i;
+
 
 		printf("DONE INTERNAL\n");
 		print_sys_vars();
@@ -304,44 +296,37 @@ int main(void){
 		printf("STARTING EXTERNAL\n");
 
 		/*external event*/
-		if (cur_line[0] == 'R') {
-			cur_length = next_line(cur_line);
+		while (submit_queue && cur_time >= submit_queue->arrive_time) {
+			pop_sub();
 		}
-
-		/* if system just read in a new line, parse that line else break*/
-		if (cur_line[0] != 'R') {
-			parse_line(cur_line);
-			if (submit_queue != NULL && cur_time >= submit_queue->arrive_time) {
-				pop_sub();
-				printf("popped submit queue\n");
-				print_queues();
-			}
+		if (cur_line[0] == 'D') {
+			parse_D(cur_line);
 		}
-		else {
-			if (cur_line[0] != 'R') {
-				printf("current line isn't done yet.\n");
-			}
-			else if (ready_queue != NULL) {
-				printf("ready queue still has jobs.\n");
-			}
-			else if (wait_queue != NULL) {
-				printf("wait queue still has processes\n");
-			}
-			else if (hold_queue_1 != NULL) {
-				printf("hold queue 1 still has jobs.\n");
-			}
-			else if (hold_queue_2 != NULL) {
-				printf("hold queue 2 still has jobs.\n");
-			}
-			else {
-				break;
-			}
-		}
-
-		cur_time += time_quantum;
 		printf("DONE EXTERNAL\n");
 		print_sys_vars();
 		print_queues();
+		if (cur_line[0] != 'R') {
+			printf("current line isn't done yet.\n");
+		}
+		else if (ready_queue != NULL) {
+			printf("ready queue still has jobs.\n");
+		}
+		else if (wait_queue != NULL) {
+			printf("wait queue still has processes\n");
+		}
+		else if (hold_queue_1 != NULL) {
+			printf("hold queue 1 still has jobs.\n");
+		}
+		else if (hold_queue_2 != NULL) {
+			printf("hold queue 2 still has jobs.\n");
+		}
+		else if (submit_queue) {
+			printf("submit queue still has jobs.\n");
+		}
+		else {
+			break;
+		}
+
 	}
 
 

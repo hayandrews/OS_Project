@@ -9,16 +9,16 @@ struct Job
 	of main memory, holds no more than 4 devices at any point during execution(max demand), and
 	runs for 3 units of time
 	*/
-	int arrive_time;
-	int job_num;
-	int mem_req;
-	int dev_req;
-	int run_time;
-	int queue_priority;
+	int arrive_time;	//10
+	int job_num;		//1
+	int mem_req;		//5
+	int dev_req;		//4
+	int run_time;		//3
+	int queue_priority; //1
 	struct Job *next;
-	int completion_time;
-	int dev_owned;
-	int time_left;
+	int completion_time;//0
+	int dev_owned;		//0
+	int time_left;		//3
 };
 
 void insert_hold_2(struct Job * node);

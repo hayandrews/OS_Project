@@ -101,15 +101,30 @@ struct Job * pop(struct Job **queue) {
 }
 
 void printList(struct Job *queue){
+	int failsafe = 0;
     struct Job *pointer = queue;
     if (pointer == NULL){
         printf("empty\n");
     } else{
-        while(pointer != NULL){
-            printf("{%d,%d,%d,%d,%d,%d} --> ",pointer->arrive_time, pointer->job_num, 
-				pointer->mem_req, pointer->dev_req, pointer->time_left, 
-				pointer->queue_priority);
+        while(pointer != NULL && failsafe < 30){
+			/*
+			int arrive_time;
+			int job_num;
+			int mem_req;
+			int dev_req;
+			int run_time;
+			int queue_priority;
+			struct Job *next;
+			int completion_time;
+			int dev_owned;
+			int time_left;
+			*/
+			printf("{#%d,a%d,m%d,d%d,r%d,p%d,c%d,o%d,t%d} --> ",pointer->job_num, 
+				pointer->arrive_time, pointer->mem_req, pointer->dev_req, 
+				pointer->run_time, pointer->queue_priority, 
+				pointer->completion_time, pointer->dev_owned, pointer->time_left);
             pointer = pointer->next;
+			failsafe++;
         }
         printf("Null \n");
     }
@@ -165,8 +180,6 @@ void fill_ready() {
 }
 
 void insert_fin(struct Job * node) {
-	printf("completing: ");
-	printList(node);
 	avail_mem += node->mem_req;
 	avail_dev += node->dev_owned;
 	insertFIFO2(&complete_queue, node);
