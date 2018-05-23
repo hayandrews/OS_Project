@@ -190,3 +190,15 @@ releases devices numbered to the job specified.*/
 void take_dev(int job_num, int dev_num) {
 	printf("releasing %d devices from job %d.\n", dev_num, job_num);
 }
+
+/*banker's algorithm?*/
+struct Job *safeJob(struct Job **queue) {
+	struct Job *cur_job = *queue;
+	while (cur_job != NULL) {
+		if (cur_job->mem_req < avail_mem && cur_job->dev_req < avail_dev) {
+			break;
+		}
+		cur_job = cur_job->next;
+	}
+	return cur_job;
+}

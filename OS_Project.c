@@ -1,4 +1,6 @@
 //Hayley Andrews, Jessica Morris
+//TODO: Ln 141, Ln 182->45, Ln 336
+//maybe change parse_Q&L to not accept out of range numbers for commands
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,7 +57,7 @@ void print_state() {
 	*/
 }
 
-/* called by main to parse initial C command
+/* called by main before CPU starts to parse initial C command
 - initializes start_time, main_memory, serial_devices, time_quantum to input
 - sets avail_mem, cur_time, avail_dev*/
 void parse_C(char * command) {
@@ -79,7 +81,7 @@ https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 	cur_line[0] = 'R';
 }
 
-/* called by parse_line when an A command is read from file.
+/* called by main in internal event when cur_line[0] = A
 - checks that the job does not require more than system has
 - puts job in submit queue*/
 void parse_A(char * command) {
@@ -111,12 +113,13 @@ void parse_A(char * command) {
 	cur_line[0] = 'R';
 }
 
-/* called by parse_line when a Q command is read from file.
+/* called by main in internal event when cur_line[0] = Q
 - holds line until arrival time specified matches system time
 - checks CPU to make sure job requesting devices is in CPU
    - dumps if it doesn't
    - adds to job in CPU if it is*/
 void parse_Q(char * command, int time) {
+	/*need to copy string each time, since strtok eats away at the string*/
 	char com[STRING_SIZE];
 	for (int j = 0; j < cur_length; j++) {
 		com[j] = command[j];
@@ -129,7 +132,7 @@ void parse_Q(char * command, int time) {
 	job_n = atoi(pch);
 	pch = strtok(NULL, " =QJD");
 	dev_r = atoi(pch);
-	if (time < arr_t) return; //too soon, don't run command
+	if (time < arr_t) return; //too soon, don't process
 	if (CPU && CPU->job_num == job_n && CPU->dev_req >= dev_r) {
 		CPU->dev_owned += dev_r;
 		avail_dev -= dev_r;
@@ -140,12 +143,13 @@ void parse_Q(char * command, int time) {
 	cur_line[0] = 'R';
 }
 
-/* called by parse_line when an L command is read from file.
+/* called by main in internal event when cur_line[0] = L
 - holds line until arrival time specified matches system time
 - checks CPU to make sure job releasing devices is in CPU
    - dumps if it doesn't
    - takes from job in CPU if it is*/
 void parse_L(char * command, int time) {
+	/*need to copy string each time, since strtok eats away at the string*/
 	char com[STRING_SIZE];
 	for (int j = 0; j < cur_length; j++) {
 		com[j] = command[j];
@@ -158,7 +162,7 @@ void parse_L(char * command, int time) {
 	job_n = atoi(pch);
 	pch = strtok(NULL, " =LJD");
 	dev_r = atoi(pch);
-	if (time < arr_t) return; //too soon, don't run command
+	if (time < arr_t) return; //too soon, don't process
 	if (CPU && CPU->job_num == job_n) {
 		if (CPU->dev_owned < dev_r) {
 			avail_dev += CPU->dev_owned;
@@ -172,11 +176,11 @@ void parse_L(char * command, int time) {
 	else {
 		printf("Job releasing devices is not on the CPU.\n");
 	}
-	cur_line[0] = 'R';
+	cur_line[0] = 'R'; //release processed, ready for next line
 }
 
-/* called by parse_line when a D command is read from file.
-- holds line until arrival time specified matches system time
+/* called in main during the external event
+- holds line until arrival time <= system time
    - unless arrival time is 9999
 - outputs a Json file and prints the state*/
 void parse_D(char * command) {
@@ -328,8 +332,6 @@ int main(void){
 		}
 
 	}
-
-
 	close_file();
 
 	/*The system turnaround time and system weighted turnaround only at the 
