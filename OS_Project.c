@@ -1,9 +1,4 @@
-//
-//  OS_Project.c
-//  
-//
-//  Created by Hayley Andrews on 5/15/18.
-//
+//Hayley Andrews, Jessica Morris
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +20,7 @@ extern struct Job *wait_queue;
 
 struct Job *CPU;
 
-int start_time = -1;
+int start_time = -1;		/* assumes start time will start at 0 or later*/
 int main_memory = -1;
 int avail_mem = -1;
 int serial_devices = -1;
@@ -33,18 +28,30 @@ int time_quantum = -1;
 int cur_time = -1;
 int avail_dev = -1;
 
-void inc_com() {
-	perror("file has an incorrect command.");
-	exit(1);
+/* called whenever a D command is processed. */
+void print_state() {
+	/*
+	(a) A list of each job that has entered the system; for each job, print the
+	state of the job (e.g. running on the CPU, in the Hold Queue, or finished 
+	at time 11), the remaining service time for unfinished jobs and the 
+	turnaround time and weighted turnaround time for finished jobs.
+
+	(b) The contents of each queue.
+
+	Note: As long as the display is readable and has the required information, that is fine.
+	*/
 }
 
+/* called by parse_line when a C command is read from file.
+- if initialization has already happened, does nothing.
+- initializes start_time, main_memory, serial_devices, time_quantum to input
+- sets avail_mem, cur_time, avail_dev*/
 void parse_C(char * command) {
 /*string parsing found at 
 https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 */
-	if (start_time > -1) { /* If start time has already been initialized, there
-						   shouldn't be another C*/
-		inc_com();
+	if (start_time > -1) { /* Checks for a second C command*/
+		return;
 	}
 
 	char * pch;
@@ -64,6 +71,9 @@ https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 	cur_line[0] = 'R';
 }
 
+/* called by parse_line when an A command is read from file.
+- checks that the job does not require more than system has
+- puts job in submit queue*/
 void parse_A(char * command) {
 	int arr_t, job_n, mem_r, dev_r, run_t, queue_p;
 	char * pch;
@@ -93,6 +103,11 @@ void parse_A(char * command) {
 	cur_line[0] = 'R';
 }
 
+/* called by parse_line when a Q command is read from file.
+- holds line until arrival time specified matches system time
+- checks CPU to make sure job requesting devices is in CPU
+   - dumps if it doesn't
+   - adds to job in CPU if it is*/
 void parse_Q(char * command) {
 	printf("%s", command);
 	int arr_t, job_n, dev_r;
@@ -102,13 +117,23 @@ void parse_Q(char * command) {
 	if (cur_time >= arr_t) {
 		pch = strtok(NULL, " =QJD");
 		job_n = atoi(pch);
-		pch = strtok(NULL, " =QJD");
-		dev_r = atoi(pch);
-		give_dev(job_n, dev_r);
+		if (CPU->job_num == job_n) {
+			pch = strtok(NULL, " =QJD");
+			dev_r = atoi(pch);
+			CPU->dev_owned += dev_r;
+		}
+		else {
+			printf("Job requesting devices is not on the CPU.\n");
+		}
 		cur_line[0] = 'R';
 	}
 }
 
+/* called by parse_line when an L command is read from file.
+- holds line until arrival time specified matches system time
+- checks CPU to make sure job releasing devices is in CPU
+   - dumps if it doesn't
+   - takes from job in CPU if it is*/
 void parse_L(char * command) {
 	printf("%s", command);
 	int arr_t, job_n, dev_r;
@@ -118,13 +143,18 @@ void parse_L(char * command) {
 	if (cur_time >= arr_t) {
 		pch = strtok(NULL, " =LJD");
 		job_n = atoi(pch);
-		pch = strtok(NULL, " =LJD");
-		dev_r = atoi(pch);
-		take_dev(job_n, dev_r);
+		if (CPU->job_num == job_n) {
+			pch = strtok(NULL, " =LJD");
+			dev_r = atoi(pch);
+			CPU->dev_owned -= dev_r;
+		}
 		cur_line[0] = 'R';
 	}
 }
 
+/* called by parse_line when a D command is read from file.
+- holds line until arrival time specified matches system time
+- outputs a Json file and prints the state*/
 void parse_D(char * command) {
 	printf("%s", command);
 	int arr_t;
@@ -133,13 +163,17 @@ void parse_D(char * command) {
 	arr_t = atoi(pch);
 	if (cur_time >= arr_t) {
 		//outputJSON();
+		print_state();
+		cur_line[0] = 'R';
 	}
-	cur_line[0] = 'R';
 }
 
+/* checks if command passed in is NULL. If not, it calls the various parse 
+functions. Incorrect letters are also handled.*/
 void parse_line(char * command) {
-	/*we assume that the 'C' case happens exactly once and it happens at the
-	very first line */
+	if (!command) {
+		return;
+	}
 	switch (command[0]) {
 	case 'C':
 		printf("command is a System Configuration. \n");
@@ -161,11 +195,10 @@ void parse_line(char * command) {
 		parse_D(command);
 		printf("command is a Display request. \n");
 		break;
-	default:
-		inc_com();
 	}
 }
 
+/*DELETE BEFORE SUBMISSION*/
 void print_queues() {
 	printf("\tPRINTING QUEUES\n");
 	if (submit_queue != NULL) {
@@ -195,6 +228,7 @@ void print_queues() {
 	fflush(stdout);
 }
 
+/*DELETE BEFORE SUBMISSION*/
 void print_sys_vars() {
 	printf("\tmain_mem: %d", main_memory);
 	printf("\tavail_mem: %d", avail_mem);
@@ -224,16 +258,22 @@ int main(void){
 			if (CPU->time_left - time_quantum < 0) {
 				CPU->time_left = 0;
 				//cur_time += (time_quantum - CPU->time_left);
+				//need to put completion time
 				insert_fin(CPU);
+				//go to external loop
 			}
 			else if (CPU->time_left - time_quantum == 0) {
 				CPU->time_left = 0;
 				//cur_time += time_quantum;
+				//need to put completion time
 				insert_fin(CPU);
+				//go to external loop
 			}
 			else {
+				
 				CPU->time_left -= time_quantum;
 				//cur_time += time_quantum;
+				//would be outside of internal loop
 				insertFIFO2(&ready_queue, CPU);
 			}
 			//CPU->time_left -= time_quantum;
@@ -286,17 +326,12 @@ int main(void){
 		print_queues();
 	}
 
-	/*printList(submit_queue);
-	printf("first arrival: %d\n", submit_queue->arrive_time);
+
 	close_file();
-	while (submit_queue != NULL) {
-		pop_sub();
-	}
-	insert_ready(pop(&hold_queue_1));
-	print_queues();
-	while (ready_queue != NULL) {
-		insert_fin(pop(&ready_queue));
-		print_queues();
-	}*/
-    //outputJSON();
+
+	/*The system turnaround time and system weighted turnaround only at the 
+	last display. Assume that the input file has a “D 9999” command at the end,
+	so that you dump the final state of the system.
+	*/
+
 }

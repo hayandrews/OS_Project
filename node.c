@@ -173,12 +173,6 @@ void insert_fin(struct Job * node) {
 }
 
 /*called when a command comes in from the file.
-gives devices numbered to the job specified.*/
-void give_dev(int job_num, int dev_num) {
-	printf("giving job %d %d devices.\n", job_num, dev_num);
-}
-
-/*called when a command comes in from the file.
 releases devices numbered to the job specified.*/
 void take_dev(int job_num, int dev_num) {
 	printf("releasing %d devices from job %d.\n", dev_num, job_num);
