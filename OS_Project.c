@@ -1,6 +1,8 @@
 //Hayley Andrews, Jessica Morris
 //TODO: Ln 141, Ln 182->45, Ln 336
 //maybe change parse_Q&L to not accept out of range numbers for commands
+//handle device requests that are too big for system, wait queue
+//popping from hold queues to ready queue is untested
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -302,6 +304,13 @@ int main(void){
 		/*external event*/
 		while (submit_queue && cur_time >= submit_queue->arrive_time) {
 			pop_sub();
+		}
+		//while (wait_queue && wait_queue->dev_owned)
+		while (hold_queue_1 && hold_queue_1->mem_req <= avail_mem) {
+			insertFIFO2(&ready_queue, pop(hold_queue_1));
+		}
+		while (hold_queue_2 && hold_queue_2->mem_req <= avail_mem) {
+			insertFIFO2(&ready_queue, pop(hold_queue_2));
 		}
 		if (cur_line[0] == 'D') {
 			parse_D(cur_line);
