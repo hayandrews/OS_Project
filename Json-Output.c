@@ -16,6 +16,8 @@ extern struct Job *hold_queue_1;
 extern struct Job *hold_queue_2;
 extern struct Job *submit_queue;
 extern struct Job *ready_queue;
+extern struct Job *complete_queue;
+extern struct Job *wait_queue;
 extern int main_memory;
 extern int avail_mem;
 extern int serial_devices;
@@ -40,6 +42,81 @@ void printQueueToFile(struct Job *queue){
             
         }
     }
+}
+
+//TODO Need to figure out what I actually need to print for following queues
+//Submit_queue, the hold queues, ready queue, and wait queue
+void printQueueJobCheck(){
+    int jobcount = 0;
+    fputs("[",output);
+    //Need to print currently running job here
+    /*
+     if (running != NULL){
+        jobcount = jobcount + 1;
+        fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+     }
+     */
+    if (submit_queue != NULL) {
+        struct Job *tmp = submit_queue;
+        while (tmp != NULL){
+            if (jobcount != 0){
+                fputs(", ",output);
+            }
+            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+            jobcount = jobcount + 1;
+        }
+    }
+    if (hold_queue_1 != NULL) {
+        struct Job *tmp = hold_queue_1;
+        while (tmp != NULL){
+            if (jobcount != 0){
+                fputs(", ",output);
+            }
+            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+            jobcount = jobcount + 1;
+        }
+    }
+    if (hold_queue_2 != NULL) {
+        struct Job *tmp = hold_queue_2;
+        while (tmp != NULL){
+            if (jobcount != 0){
+                fputs(", ",output);
+            }
+            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+            jobcount = jobcount + 1;
+        }
+    }
+    if (ready_queue != NULL) {
+        struct Job *tmp = ready_queue;
+        while (tmp != NULL){
+            if (jobcount != 0){
+                fputs(", ",output);
+            }
+            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+            jobcount = jobcount + 1;
+        }
+    }
+    if (complete_queue != NULL) {
+        struct Job *tmp = complete_queue;
+        while (tmp != NULL){
+            if (jobcount != 0){
+                fputs(", ",output);
+            }
+            fprintf(output, "{\"arrival_time\": %d, \"id\": %d, \"remaining_time\": %d, \"completion_time\": %d}", tmp->arrive_time, tmp->job_num, tmp->time_left, tmp->completion_time);
+            jobcount = jobcount + 1;
+        }
+    }
+    if (wait_queue != NULL) {
+        struct Job *tmp = wait_queue;
+        while (tmp != NULL){
+            if (jobcount != 0){
+                fputs(", ",output);
+            }
+            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+            jobcount = jobcount + 1;
+        }
+    }
+    fputs("],",output);
 }
 
 void outputJSON(){
