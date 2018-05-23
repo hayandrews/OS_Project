@@ -11,12 +11,23 @@
 char s_input[STRING_SIZE];	/* input file name */
 char cur_line[STRING_SIZE]; /* current line in file*/
 int cur_length;				/* length for above string*/
+int i;						/* for use in for loops*/
+
+/* hold queues are for jobs that are waiting for system memory */
 extern struct Job *hold_queue_1;
 extern struct Job *hold_queue_2;
-extern struct Job *submit_queue;
-extern struct Job *ready_queue;
+
+/* queue for jobs that the system can run. Jobs do not stay here long.*/
+extern struct Job *submit_queue; 
+
+/* queue for jobs that hold system memory. This queue's jobs cycle through CPU*/
+extern struct Job *ready_queue; 
+
+/* queue for jobs that have been completed*/
 extern struct Job *complete_queue;
-extern struct Job *wait_queue;
+
+/* Queue for jobs that hold system memory and are waiting to hold devices*/
+extern struct Job *wait_queue;	
 
 struct Job *CPU;
 
@@ -117,7 +128,7 @@ void parse_Q(char * command) {
 	if (cur_time >= arr_t) {
 		pch = strtok(NULL, " =QJD");
 		job_n = atoi(pch);
-		if (CPU->job_num == job_n) {
+		if (CPU && CPU->job_num == job_n) {
 			pch = strtok(NULL, " =QJD");
 			dev_r = atoi(pch);
 			CPU->dev_owned += dev_r;
@@ -143,10 +154,13 @@ void parse_L(char * command) {
 	if (cur_time >= arr_t) {
 		pch = strtok(NULL, " =LJD");
 		job_n = atoi(pch);
-		if (CPU->job_num == job_n) {
+		if (CPU && CPU->job_num == job_n) {
 			pch = strtok(NULL, " =LJD");
 			dev_r = atoi(pch);
 			CPU->dev_owned -= dev_r;
+		}
+		else {
+			printf("Job releasing devices is not on the CPU.\n");
 		}
 		cur_line[0] = 'R';
 	}
@@ -154,6 +168,7 @@ void parse_L(char * command) {
 
 /* called by parse_line when a D command is read from file.
 - holds line until arrival time specified matches system time
+   - unless arrival time is 9999
 - outputs a Json file and prints the state*/
 void parse_D(char * command) {
 	printf("%s", command);
@@ -164,6 +179,9 @@ void parse_D(char * command) {
 	if (cur_time >= arr_t) {
 		//outputJSON();
 		print_state();
+		cur_line[0] = 'R';
+	}
+	else if (arr_t == 9999) {
 		cur_line[0] = 'R';
 	}
 }
@@ -242,7 +260,7 @@ int main(void){
 	printf("Please input filename:\n");
 	scanf("%s", s_input);
 	open_file(s_input);
-	cur_line[0] = 'R';
+	cur_line[0] = 'R'; //cur_line is ready for input
 	for (;;) {
 		printf("\n\n\nNEW ITERATION\n");
 		print_sys_vars();
