@@ -51,9 +51,9 @@ void printQueueJobCheck(){
     fputs("[",output);
     //Need to print currently running job here
     /*
-     if (running != NULL){
+     if (CPU != NULL){
         jobcount = jobcount + 1;
-        fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+        fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", CPU->arrive_time, CPU->dev_owned, CPU->job_num, CPU->time_left);
      }
      */
     if (submit_queue != NULL) {
@@ -72,7 +72,7 @@ void printQueueJobCheck(){
             if (jobcount != 0){
                 fputs(", ",output);
             }
-            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+            fprintf(output, "{\"arrival_time\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->job_num, tmp->time_left);
             jobcount = jobcount + 1;
         }
     }
@@ -82,7 +82,7 @@ void printQueueJobCheck(){
             if (jobcount != 0){
                 fputs(", ",output);
             }
-            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+            fprintf(output, "{\"arrival_time\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->job_num, tmp->time_left);
             jobcount = jobcount + 1;
         }
     }
@@ -141,6 +141,7 @@ void outputJSON(){
     //TODO - Currently Running
     fputs("\"running\": ",output);
     fputs("2, ",output);
+    //fprintf(output, "%d, ", CPU->job_num);
     
     fputs("\"submitq\": ",output);
     printQueueToFile(submit_queue);
