@@ -64,6 +64,7 @@ void printQueueJobCheck(){
             }
             fprintf(output, "{\"arrival_time\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->job_num, tmp->time_left);
             jobcount = jobcount + 1;
+            tmp = tmp->next;
         }
     }
     if (hold_queue_1 != NULL) {
@@ -74,6 +75,7 @@ void printQueueJobCheck(){
             }
             fprintf(output, "{\"arrival_time\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->job_num, tmp->time_left);
             jobcount = jobcount + 1;
+            tmp = tmp->next;
         }
     }
     if (hold_queue_2 != NULL) {
@@ -84,6 +86,7 @@ void printQueueJobCheck(){
             }
             fprintf(output, "{\"arrival_time\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->job_num, tmp->time_left);
             jobcount = jobcount + 1;
+            tmp = tmp->next;
         }
     }
     if (complete_queue != NULL) {
@@ -94,6 +97,7 @@ void printQueueJobCheck(){
             }
             fprintf(output, "{\"arrival_time\": %d, \"id\": %d, \"remaining_time\": %d, \"completion_time\": %d}", tmp->arrive_time, tmp->job_num, tmp->time_left, tmp->completion_time);
             jobcount = jobcount + 1;
+            tmp = tmp->next;
         }
     }
     if (ready_queue != NULL) {
@@ -104,6 +108,7 @@ void printQueueJobCheck(){
             }
             fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
             jobcount = jobcount + 1;
+            tmp = tmp->next;
         }
     }
     if (wait_queue != NULL) {
@@ -114,6 +119,7 @@ void printQueueJobCheck(){
             }
             fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
             jobcount = jobcount + 1;
+            tmp = tmp->next;
         }
     }
     fputs("],",output);
@@ -125,7 +131,7 @@ void outputJSON(char* title, int time){
     for (i = 0; i < (strlen(title)-4); i++){
         notxt[i] = title[i];
     }
-	notxt[i + 1] = '\0';
+	notxt[i] = '\0';
     char buffer[STRING_SIZE];
     snprintf(buffer, sizeof(char) * STRING_SIZE, "%s_D%d.json", notxt, time);
     output = fopen(buffer, "w");
@@ -158,9 +164,7 @@ void outputJSON(char* title, int time){
 
     fputs("\"submitq\": ",output);
     printQueueToFile(submit_queue);
-    //fputs("[], ",output);
-	printf("\t\tblep\n");
-    
+    //fputs("[], ",output);    
     fputs("\"holdq2\": ",output);
     printQueueToFile(hold_queue_2);
     //fputs("[], ",output);
