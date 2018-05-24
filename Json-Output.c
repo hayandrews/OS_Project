@@ -121,12 +121,13 @@ void printQueueJobCheck(){
 
 void outputJSON(char* title, int time){
     char notxt[STRING_SIZE];
-    for (int i = 0; i < (strlen(title)-4); i++){
+	int i;
+    for (i = 0; i < (strlen(title)-4); i++){
         notxt[i] = title[i];
     }
+	notxt[i + 1] = '\0';
     char buffer[STRING_SIZE];
-    snprintf(buffer, sizeof(char) * STRING_SIZE, "%s_D%d.json", buffer, time);
-    
+    snprintf(buffer, sizeof(char) * STRING_SIZE, "%s_D%d.json", notxt, time);
     output = fopen(buffer, "w");
     fputs("{",output);
     
@@ -144,25 +145,36 @@ void outputJSON(char* title, int time){
     
     fputs("\"total_devices\": ",output);
     fprintf(output, "%d, ", serial_devices);
+	printf("\tblep\n");
     
     //TODO - Currently Running
     fputs("\"running\": ",output);
+	printf("\tblep\n");
     //fputs("2, ",output);
+	if (CPU)
     fprintf(output, "%d, ", CPU->job_num);
+	else
+		fprintf(output, "%d, ", -1);
+	printf("\tRunning printed\n");
+
     
     fputs("\"submitq\": ",output);
     printQueueToFile(submit_queue);
     //fputs("[], ",output);
+	printf("\t\tblep\n");
     
     fputs("\"holdq2\": ",output);
     printQueueToFile(hold_queue_2);
     //fputs("[], ",output);
-    
+	printf("\tholdq2 printed\n");
+
     //TODO - All Jobs
     fputs("\"job\": ",output);
     printQueueJobCheck();
     //fputs("[{\"arrival_time\": 4, \"devices_allocated\": 0, \"id\": 2, \"remaining_time\": 9}, {\"arrival_time\": 3, \"devices_allocated\": 0, \"id\": 1, \"remaining_time\": 6}, {\"arrival_time\": 8, \"devices_allocated\": 0, \"id\": 5, \"remaining_time\": 4}, {\"arrival_time\": 5, \"id\": 3, \"remaining_time\": 4}], ",output);
-    
+	printf("\tALL JOBS printed\n");
+
+	printf("\t\tblep\n");
     fputs("\"holdq1\": ",output);
     printQueueToFile(hold_queue_1);
     //fputs("[3], ",output);
@@ -176,10 +188,12 @@ void outputJSON(char* title, int time){
     //TODO - Completed Jobs
     fputs("\"completeq\": ",output);
     fputs("[], ",output);
+	printf("\tblep\n");
     
     fputs("\"waitq\": ",output);
     fputs("[]",output);
     fputs("}",output);
     fclose(output);
+	printf("\tend blep\n");
 }
 

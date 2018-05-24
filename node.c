@@ -50,7 +50,6 @@ void insert_hold_2(struct Job * node){
 - wait_queue
 - complete_queue*/
 void insertFIFO2(struct Job **queue, struct Job * node) {
-	printf("\t\t\tpoke\n");
 	if (*queue == NULL) {
 		*queue = node;
 	}
@@ -61,7 +60,6 @@ void insertFIFO2(struct Job **queue, struct Job * node) {
 		}
 		pointer->next = node;
 	}
-	printf("\t\t\tpoke poke\n");
 }
 
 /*Basically acts as constructor for jobs. Only place space should be malloced 
@@ -132,7 +130,6 @@ void printList(struct Job *queue){
         printf("Null \n");
     }
 
-	printf("\t\tprintList done\n");
 }
 
 void insert_ready(struct Job * node) {

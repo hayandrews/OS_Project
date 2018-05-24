@@ -196,7 +196,9 @@ void parse_D(char * command) {
 	pch = strtok(command, " =D");
 	arr_t = atoi(pch);
 	if (cur_time >= arr_t) {
-		//outputJSON(s_input, arr_t);
+		printf("last line before seg fault\n");
+		outputJSON(s_input, arr_t);
+		printf("last line after seg fault\n");
 		print_state();
 		cur_line[0] = 'R';
 	}
