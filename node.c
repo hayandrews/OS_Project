@@ -50,6 +50,7 @@ void insert_hold_2(struct Job * node){
 - wait_queue
 - complete_queue*/
 void insertFIFO2(struct Job **queue, struct Job * node) {
+	printf("\t\t\tpoke\n");
 	if (*queue == NULL) {
 		*queue = node;
 	}
@@ -60,6 +61,7 @@ void insertFIFO2(struct Job **queue, struct Job * node) {
 		}
 		pointer->next = node;
 	}
+	printf("\t\t\tpoke poke\n");
 }
 
 /*Basically acts as constructor for jobs. Only place space should be malloced 
@@ -92,20 +94,42 @@ void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue
 }
 
 struct Job * pop(struct Job **queue) {
-	struct Job *ret = *queue;
-	if (ret) {
-		*queue = ret->next;
+	printf("\t\t\tpop\n");
+	if (queue) {
+		printf("\t\t\t\tqueueu!\n");
+		if (*queue) {
+			printf("\t\t\t\t\tqueueu: ");/*
+			printList(*queue);*/
+		}
 	}
-	ret->next = NULL;
+	struct Job *ret = *queue;
+	if (ret != NULL) {
+		printf("\t\t\t\tif ret, ret: \n");
+		//printList(ret);
+		if (ret->next == NULL) {
+			printf("ret->next is NULL\n");
+		}
+		else {
+			printf("ret->next is not NULL\n");
+		}
+		*queue = ret->next;
+		printf("\t\t\t\tqueue = ret->next\n");
+		ret->next = NULL;
+		printf("\t\t\t\tret->next = NULL\n");
+	}
+	printf("\t\t\tpop pop\n");
 	return ret;
 }
 
 void printList(struct Job *queue){
+	//printf("here: %d\n", queue->job_num);
+	//printf("\t\tprintList\n");
 	int failsafe = 0;
     struct Job *pointer = queue;
     if (pointer == NULL){
         printf("empty\n");
     } else{
+		//printf("\t\t\tpointer!= NULL\n");
         while(pointer != NULL && failsafe < 30){
 			/*
 			int arrive_time;
@@ -119,6 +143,17 @@ void printList(struct Job *queue){
 			int dev_owned;
 			int time_left;
 			*/
+			printf(" - ");
+			/*printf("job num: %d\n", queue->job_num);
+			printf("arrive: %d\n", queue->arrive_time);
+			printf("mem req: %d\n", queue->mem_req);
+			printf("dev req: %d\n", queue->dev_req);
+			printf("run time: %d\n", queue->run_time);
+			printf("queue: %d\n", queue->queue_priority);
+			printf("completion: %d\n", queue->completion_time);
+			printf("dev_owned: %d\n", queue->dev_owned);
+			printf("time left: %d\n", queue->time_left);
+			printf(" - ");*/
 			printf("{#%d,a%d,m%d,d%d,r%d,p%d,c%d,o%d,t%d} --> ",pointer->job_num, 
 				pointer->arrive_time, pointer->mem_req, pointer->dev_req, 
 				pointer->run_time, pointer->queue_priority, 
@@ -128,7 +163,8 @@ void printList(struct Job *queue){
         }
         printf("Null \n");
     }
-    
+
+	printf("\t\tprintList done\n");
 }
 
 void insert_ready(struct Job * node) {

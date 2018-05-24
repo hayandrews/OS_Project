@@ -310,16 +310,22 @@ int main(void){
 		while (submit_queue && cur_time >= submit_queue->arrive_time) {
 			pop_sub();
 		}
+		printf("\tdone popping submit_queue\n");
 		while (wait_queue && wait_queue->dev_owned <= avail_dev) {
 			avail_dev -= wait_queue->dev_owned;
 			insertFIFO2(&ready_queue, pop(wait_queue));
 		}
+		printf("\tdone popping wait_queue\n");
 		while (hold_queue_1 && hold_queue_1->mem_req <= avail_mem) {
+			printf("\t\tpopping hold queue\n");
 			insertFIFO2(&ready_queue, pop(hold_queue_1));
+			printf("\t\tpopped hold queue\n");
 		}
+		printf("\tdone popping hold_queue 1\n");
 		while (hold_queue_2 && hold_queue_2->mem_req <= avail_mem) {
 			insertFIFO2(&ready_queue, pop(hold_queue_2));
 		}
+		printf("\tdone popping hold_queue 2\n");
 		if (cur_line[0] == 'D') {
 			parse_D(cur_line);
 		}
