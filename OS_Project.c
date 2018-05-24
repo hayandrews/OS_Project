@@ -3,6 +3,7 @@
 //maybe change parse_Q&L to not accept out of range numbers for commands
 //handle device requests that are too big for system, wait queue
 //popping from hold queues to ready queue is untested
+//weighted turnharound is turnaround/run_time
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,8 +137,12 @@ void parse_Q(char * command, int time) {
 	dev_r = atoi(pch);
 	if (time < arr_t) return; //too soon, don't process
 	if (CPU && CPU->job_num == job_n && CPU->dev_req >= dev_r) {
-		CPU->dev_owned += dev_r;
-		avail_dev -= dev_r;
+		CPU->dev_owned += dev_r;	//device doesn't technically own yet
+		if (dev_r > avail_dev) {
+			insertFIFO2(&wait_queue, CPU);
+			CPU = NULL;
+		} else 
+			avail_dev -= dev_r;
 	}
 	else {
 		printf("Job requesting devices is not on the CPU.\n");
@@ -305,7 +310,10 @@ int main(void){
 		while (submit_queue && cur_time >= submit_queue->arrive_time) {
 			pop_sub();
 		}
-		//while (wait_queue && wait_queue->dev_owned)
+		while (wait_queue && wait_queue->dev_owned <= avail_dev) {
+			avail_dev -= wait_queue->dev_owned;
+			insertFIFO2(&ready_queue, pop(wait_queue));
+		}
 		while (hold_queue_1 && hold_queue_1->mem_req <= avail_mem) {
 			insertFIFO2(&ready_queue, pop(hold_queue_1));
 		}
