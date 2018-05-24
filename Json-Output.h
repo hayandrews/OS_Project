@@ -3,6 +3,6 @@
 
 void printQueueToFile(struct Job *queue);
 void printQueueJobCheck();
-void outputJSON();
+void outputJSON(char* title, int time);
 
 #endif // JSON_H_

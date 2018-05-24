@@ -10,6 +10,8 @@
 #include "Json-Output.h"
 #include "node.h"
 
+#define STRING_SIZE 1024
+
 
 FILE *output;
 extern struct Job *hold_queue_1;
@@ -18,6 +20,7 @@ extern struct Job *submit_queue;
 extern struct Job *ready_queue;
 extern struct Job *complete_queue;
 extern struct Job *wait_queue;
+extern struct Job *CPU;
 extern int main_memory;
 extern int avail_mem;
 extern int serial_devices;
@@ -49,13 +52,10 @@ void printQueueToFile(struct Job *queue){
 void printQueueJobCheck(){
     int jobcount = 0;
     fputs("[",output);
-    //Need to print currently running job here
-    /*
      if (CPU != NULL){
         jobcount = jobcount + 1;
         fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", CPU->arrive_time, CPU->dev_owned, CPU->job_num, CPU->time_left);
      }
-     */
     if (submit_queue != NULL) {
         struct Job *tmp = submit_queue;
         while (tmp != NULL){
@@ -119,8 +119,15 @@ void printQueueJobCheck(){
     fputs("],",output);
 }
 
-void outputJSON(){
-    output = fopen("JSONtest.json", "w");
+void outputJSON(char* title, int time){
+    char notxt[STRING_SIZE];
+    for (int i = 0; i < (strlen(title)-4); i++){
+        notxt[i] = title[i];
+    }
+    char buffer[STRING_SIZE];
+    snprintf(buffer, sizeof(char) * STRING_SIZE, "%s_D%d.json", buffer, time);
+    
+    output = fopen(buffer, "w");
     fputs("{",output);
     
     fputs("\"readyq\": ",output);
@@ -140,8 +147,8 @@ void outputJSON(){
     
     //TODO - Currently Running
     fputs("\"running\": ",output);
-    fputs("2, ",output);
-    //fprintf(output, "%d, ", CPU->job_num);
+    //fputs("2, ",output);
+    fprintf(output, "%d, ", CPU->job_num);
     
     fputs("\"submitq\": ",output);
     printQueueToFile(submit_queue);
