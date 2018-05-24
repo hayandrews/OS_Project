@@ -151,10 +151,12 @@ void outputJSON(char* title, int time){
     fputs("\"running\": ",output);
 	printf("\tblep\n");
     //fputs("2, ",output);
-	if (CPU)
-    fprintf(output, "%d, ", CPU->job_num);
-	else
-		fprintf(output, "%d, ", -1);
+    if (CPU) {
+        fprintf(output, "%d, ", CPU->job_num);
+    }
+    else {
+        fprintf(output, "%d, ", -1);
+    }
 	printf("\tRunning printed\n");
 
     
