@@ -62,7 +62,7 @@ void printQueueJobCheck(){
             if (jobcount != 0){
                 fputs(", ",output);
             }
-            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
+            fprintf(output, "{\"arrival_time\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->job_num, tmp->time_left);
             jobcount = jobcount + 1;
         }
     }
@@ -86,16 +86,6 @@ void printQueueJobCheck(){
             jobcount = jobcount + 1;
         }
     }
-    if (ready_queue != NULL) {
-        struct Job *tmp = ready_queue;
-        while (tmp != NULL){
-            if (jobcount != 0){
-                fputs(", ",output);
-            }
-            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
-            jobcount = jobcount + 1;
-        }
-    }
     if (complete_queue != NULL) {
         struct Job *tmp = complete_queue;
         while (tmp != NULL){
@@ -103,6 +93,16 @@ void printQueueJobCheck(){
                 fputs(", ",output);
             }
             fprintf(output, "{\"arrival_time\": %d, \"id\": %d, \"remaining_time\": %d, \"completion_time\": %d}", tmp->arrive_time, tmp->job_num, tmp->time_left, tmp->completion_time);
+            jobcount = jobcount + 1;
+        }
+    }
+    if (ready_queue != NULL) {
+        struct Job *tmp = ready_queue;
+        while (tmp != NULL){
+            if (jobcount != 0){
+                fputs(", ",output);
+            }
+            fprintf(output, "{\"arrival_time\": %d, \"devices_allocated\": %d, \"id\": %d, \"remaining_time\": %d}", tmp->arrive_time, tmp->dev_owned, tmp->job_num, tmp->time_left);
             jobcount = jobcount + 1;
         }
     }
@@ -153,7 +153,8 @@ void outputJSON(){
     
     //TODO - All Jobs
     fputs("\"job\": ",output);
-    fputs("[{\"arrival_time\": 4, \"devices_allocated\": 0, \"id\": 2, \"remaining_time\": 9}, {\"arrival_time\": 3, \"devices_allocated\": 0, \"id\": 1, \"remaining_time\": 6}, {\"arrival_time\": 8, \"devices_allocated\": 0, \"id\": 5, \"remaining_time\": 4}, {\"arrival_time\": 5, \"id\": 3, \"remaining_time\": 4}], ",output);
+    printQueueJobCheck();
+    //fputs("[{\"arrival_time\": 4, \"devices_allocated\": 0, \"id\": 2, \"remaining_time\": 9}, {\"arrival_time\": 3, \"devices_allocated\": 0, \"id\": 1, \"remaining_time\": 6}, {\"arrival_time\": 8, \"devices_allocated\": 0, \"id\": 5, \"remaining_time\": 4}, {\"arrival_time\": 5, \"id\": 3, \"remaining_time\": 4}], ",output);
     
     fputs("\"holdq1\": ",output);
     printQueueToFile(hold_queue_1);
