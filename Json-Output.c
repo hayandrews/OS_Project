@@ -145,11 +145,9 @@ void outputJSON(char* title, int time){
     
     fputs("\"total_devices\": ",output);
     fprintf(output, "%d, ", serial_devices);
-	printf("\tblep\n");
     
     //TODO - Currently Running
     fputs("\"running\": ",output);
-	printf("\tblep\n");
     //fputs("2, ",output);
     if (CPU) {
         fprintf(output, "%d, ", CPU->job_num);
@@ -157,9 +155,7 @@ void outputJSON(char* title, int time){
     else {
         fprintf(output, "%d, ", -1);
     }
-	printf("\tRunning printed\n");
 
-    
     fputs("\"submitq\": ",output);
     printQueueToFile(submit_queue);
     //fputs("[], ",output);
