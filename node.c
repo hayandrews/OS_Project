@@ -12,6 +12,7 @@ struct Job *wait_queue = NULL;
 extern int avail_mem;
 extern int avail_dev;
 
+
 /*used for inserting into hold_queue_2 only*/
 void insert_hold_2(struct Job * node){
 	//Empty queue make new_node the head
@@ -65,7 +66,7 @@ void insertFIFO2(struct Job **queue, struct Job * node) {
 /*Basically acts as constructor for jobs. Only place space should be malloced 
 for a job, initializes all the struct fields. Jobs automatically placed in 
 submit_queue.*/
-void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p) {
+void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p, int time) {
 	struct Job *new_node = (struct Job*)malloc(sizeof(struct Job));
 	new_node->arrive_time = arr_t;
 	new_node->job_num = job_n;
@@ -88,6 +89,10 @@ void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue
 			pointer = pointer->next;
 		}
 		pointer->next = new_node;
+	}
+
+	while (submit_queue && time >= submit_queue->arrive_time) {
+		pop_sub();
 	}
 }
 

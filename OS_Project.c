@@ -136,7 +136,7 @@ void parse_Q(char * command, int time) {
 	pch = strtok(NULL, " =QJD");
 	dev_r = atoi(pch);
 	if (time < arr_t) return; //too soon, don't process
-	if (CPU && CPU->job_num == job_n && CPU->dev_req >= dev_r) {
+	if (CPU && CPU->job_num == job_n && (CPU->dev_req - CPU->dev_owned) >= dev_r) {
 		CPU->dev_owned += dev_r;	//device doesn't technically own yet
 		if (dev_r > avail_dev) {
 			insertFIFO2(&wait_queue, CPU);
@@ -190,15 +190,14 @@ void parse_L(char * command, int time) {
 - holds line until arrival time <= system time
    - unless arrival time is 9999
 - outputs a Json file and prints the state*/
-void parse_D(char * command) {
+void parse_D(char * command, int time) {
 	int arr_t;
 	char * pch;
 	pch = strtok(command, " =D");
 	arr_t = atoi(pch);
-	if (cur_time >= arr_t) {
-		printf("last line before seg fault\n");
-		outputJSON(s_input, arr_t);
-		printf("last line after seg fault\n");
+	printf("\tcomparing %d >= %d\n", time, arr_t);
+	if (time >= arr_t) {
+		outputJSON(s_input, time);
 		print_state();
 		cur_line[0] = 'R';
 	}
@@ -270,22 +269,7 @@ int main(void){
 				printf("\tCPU: ");
 				printList(CPU);
 			}
-			else printf("CPU empty.\n");
-			if (cur_line[0] == 'Q') {
-				parse_Q(cur_line, cur_time + i);
-				if (cur_line[0] == 'R') {//if command Q ran, it interrupted
-					flag = false;
-				}
-			}
-			else if (cur_line[0] == 'L') {
-				parse_L(cur_line, cur_time+i);
-				if (cur_line[0] == 'R') {//if command L ran, it interrupted
-					flag = false;
-				}
-			}
-			else if (cur_line[0] == 'A'){
-				parse_A(cur_line);		//store in submit queue till it arrives
-			}
+
 			if (CPU) {
 				CPU->time_left--;
 				if (CPU->time_left <= 0) {
@@ -295,6 +279,28 @@ int main(void){
 					CPU = NULL;
 				}
 			}
+
+			else printf("CPU empty.\n");
+			if (cur_line[0] == 'Q') {
+				parse_Q(cur_line, cur_time + i);
+				if (cur_line[0] == 'R') {//if command Q ran, it interrupted
+					flag = false;
+				}
+			}
+			else if (cur_line[0] == 'L') {
+				parse_L(cur_line, cur_time + i);
+				if (cur_line[0] == 'R') {//if command L ran, it interrupted
+					flag = false;
+				}
+			}
+			else if (cur_line[0] == 'A'){
+				parse_A(cur_line);		//store in submit queue till it arrives
+			}
+			else if (cur_line[0] == 'D') {
+				printf("\tcur_line = D\n");
+				parse_D(cur_line, cur_time + i);
+			}
+			
 		}
 		flag = true;
 		if (CPU)
@@ -321,9 +327,6 @@ int main(void){
 		}
 		while (hold_queue_2 && hold_queue_2->mem_req <= avail_mem) {
 			insertFIFO2(&ready_queue, pop(&hold_queue_2));
-		}
-		if (cur_line[0] == 'D') {
-			parse_D(cur_line);
 		}
 		printf("DONE EXTERNAL\n");
 		print_sys_vars();

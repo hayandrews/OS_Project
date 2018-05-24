@@ -141,7 +141,7 @@ void outputJSON(char* title, int time){
     printQueueToFile(ready_queue);
     
     fputs("\"current_time\": ",output);
-    fprintf(output, "%d, ", cur_time);
+    fprintf(output, "%d, ", time);
     
     fputs("\"total_memory\": ",output);
     fprintf(output, "%d, ", main_memory);
