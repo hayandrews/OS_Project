@@ -196,7 +196,7 @@ void parse_D(char * command) {
 	pch = strtok(command, " =D");
 	arr_t = atoi(pch);
 	if (cur_time >= arr_t) {
-		//outputJSON();
+		//outputJSON(s_input, arr_t);
 		print_state();
 		cur_line[0] = 'R';
 	}
