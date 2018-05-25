@@ -86,7 +86,7 @@ void print_state(int time) {
         int jobcount = 0;
         while (tmp != NULL){
             jobcount = jobcount + 1;
-            printf("Job %d is complete, turnaround time is: %d, weighted turnaround time is: %d\n", tmp->job_num, (tmp->completion_time - tmp->arrive_time), ((tmp->completion_time - tmp->arrive_time)/cur_time));
+            printf("Job %d is complete, turnaround time is: %d, weighted turnaround time is: %f\n", tmp->job_num, (tmp->completion_time - tmp->arrive_time), ((double)(tmp->completion_time - tmp->arrive_time)/(double)cur_time));
             tmp = tmp->next;
         }
     }
