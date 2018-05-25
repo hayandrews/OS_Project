@@ -8,6 +8,9 @@
 #include <stdio.h>
 
 void print_state() {
+    if (CPU){
+        printf("Job %d is in the CPU, remaining service time is: %d\n", CPU->job_num, CPU->time_left);
+    }
     if (hold_queue_1 != NULL){
         struct Job *tmp = hold_queue_1;
         while (tmp != NULL){

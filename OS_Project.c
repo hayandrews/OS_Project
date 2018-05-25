@@ -47,7 +47,130 @@ int cur_time = -1;
 int avail_dev = -1;
 
 /* called whenever a D command is processed. */
-void print_state() {
+void print_state(int time) {
+    printf("\n");
+    printf("PRINTING CURRENT STATES AT TIME %d\n", time);
+    if (CPU){
+        printf("Job %d is in the CPU, remaining service time is: %d\n", CPU->job_num, CPU->time_left);
+    }
+    if (hold_queue_1 != NULL){
+        struct Job *tmp = hold_queue_1;
+        while (tmp != NULL){
+            printf("Job %d is in Hold Queue 1, remaining service time is: %d\n", tmp->job_num, tmp->time_left);
+            tmp = tmp->next;
+        }
+    }
+    if (hold_queue_2 != NULL){
+        struct Job *tmp = hold_queue_2;
+        while (tmp != NULL){
+            printf("Job %d is in Hold Queue 2, remaining service time is: %d\n", tmp->job_num, tmp->time_left);
+            tmp = tmp->next;
+        }
+    }
+    if (submit_queue != NULL){
+        struct Job *tmp = submit_queue;
+        while (tmp != NULL){
+            printf("Job %d is in submit queue, remaining service time is: %d\n", tmp->job_num, tmp->time_left);
+            tmp = tmp->next;
+        }
+    }
+    if (ready_queue != NULL){
+        struct Job *tmp = ready_queue;
+        while (tmp != NULL){
+            printf("Job %d is READY, remaining service time is: %d\n", tmp->job_num, tmp->time_left);
+            tmp = tmp->next;
+        }
+    }
+    if (complete_queue != NULL){
+        struct Job *tmp = complete_queue;
+        int jobcount = 0;
+        while (tmp != NULL){
+            jobcount = jobcount + 1;
+            printf("Job %d is complete, turnaround time is: %d, weighted turnaround time is: %d\n", tmp->job_num, (tmp->completion_time - tmp->arrive_time), ((tmp->completion_time - tmp->arrive_time)/cur_time));
+            tmp = tmp->next;
+        }
+    }
+    if (wait_queue != NULL){
+        struct Job *tmp = wait_queue;
+        while (tmp != NULL){
+            printf("Job %d is in the wait queue, remaining service time is: %d\n", tmp->job_num, tmp->time_left);
+            tmp = tmp->next;
+        }
+    }
+    
+    printf("PRINTING QUEUE CONTENTS AT TIME %d\n", time);
+    if (hold_queue_1){
+        struct Job *tmp = hold_queue_1;
+        printf("Hold Queue 1 Holds: ");
+        while (tmp != NULL){
+            printf("Job %d, ", tmp->job_num);
+            tmp = tmp->next;
+        }
+        printf("\n");
+    } else {
+        printf("Hold Queue 1 is Empty\n");
+    }
+    if (hold_queue_2 != NULL){
+        struct Job *tmp = hold_queue_2;
+        printf("Hold Queue 2 Holds: ");
+        while (tmp != NULL){
+            printf("Job %d, ", tmp->job_num);
+            tmp = tmp->next;
+        }
+        printf("\n");
+    } else {
+        printf("Hold Queue 2 is Empty\n");
+    }
+    
+    if (submit_queue != NULL){
+        struct Job *tmp = submit_queue;
+        printf("Submit Queue Holds: ");
+        while (tmp != NULL){
+            printf("Job %d, ", tmp->job_num);
+            tmp = tmp->next;
+        }
+        printf("\n");
+    } else {
+        printf("Submit Queue is Empty\n");
+    }
+    
+    if (ready_queue != NULL){
+        struct Job *tmp = ready_queue;
+        printf("Ready Queue Holds: ");
+        while (tmp != NULL){
+            printf("Job %d, ", tmp->job_num);
+            tmp = tmp->next;
+        }
+        printf("\n");
+    } else {
+        printf("Ready Queue is Empty\n");
+    }
+    
+    if (complete_queue != NULL){
+        struct Job *tmp = complete_queue;
+        printf("Completed Queue Holds: ");
+        while (tmp != NULL){
+            printf("Job %d, ", tmp->job_num);
+            tmp = tmp->next;
+        }
+        printf("\n");
+    } else {
+        printf("Completed Queue is Empty\n");
+    }
+    
+    if (wait_queue != NULL){
+        struct Job *tmp = wait_queue;
+        printf("Waut Queue Holds: ");
+        while (tmp != NULL){
+            printf("Job %d, ", tmp->job_num);
+            tmp = tmp->next;
+        }
+        printf("\n");
+    } else {
+        printf("Wait Queue is Empty\n");
+    }
+    printf("\n");
+    
 	/*
 	(a) A list of each job that has entered the system; for each job, print the
 	state of the job (e.g. running on the CPU, in the Hold Queue, or finished 
@@ -104,10 +227,10 @@ void parse_A(char * command, int time) {
 	queue_p = atoi(pch);
 
 	if (mem_r > main_memory) {
-		printf("job requires %d memory, but system only has %d memory.\n", mem_r, main_memory);
+		//printf("job requires %d memory, but system only has %d memory.\n", mem_r, main_memory);
 	}
 	else if (dev_r > serial_devices) {
-		printf("job requires %d devices, but system only has %d devices.\n", dev_r, serial_devices);
+		//printf("job requires %d devices, but system only has %d devices.\n", dev_r, serial_devices);
 	}
 	else {
 		insert_sub(arr_t, job_n, mem_r, dev_r, run_t, queue_p, time);
@@ -145,7 +268,7 @@ void parse_Q(char * command, int time) {
 			avail_dev -= dev_r;
 	}
 	else {
-		printf("Job requesting devices is not on the CPU.\n");
+		//printf("Job requesting devices is not on the CPU.\n");
 	}
 	cur_line[0] = 'R';
 }
@@ -181,7 +304,7 @@ void parse_L(char * command, int time) {
 		}
 	}
 	else {
-		printf("Job releasing devices is not on the CPU.\n");
+		//printf("Job releasing devices is not on the CPU.\n");
 	}
 	cur_line[0] = 'R'; //release processed, ready for next line
 }
@@ -195,55 +318,15 @@ void parse_D(char * command, int time) {
 	char * pch;
 	pch = strtok(command, " =D");
 	arr_t = atoi(pch);
-	printf("\tcomparing %d >= %d\n", time, arr_t);
+	//printf("\tcomparing %d >= %d\n", time, arr_t);
 	if (time >= arr_t) {
 		outputJSON(s_input, time);
-		print_state();
+		print_state(time);
 		cur_line[0] = 'R';
 	}
 	else if (arr_t == 9999) {
 		cur_line[0] = 'R';
 	}
-}
-
-/*DELETE BEFORE SUBMISSION*/
-void print_queues() {
-	printf("\tPRINTING QUEUES\n");
-	if (submit_queue != NULL) {
-		printf("\tSubmit_queue: ");
-		printList(submit_queue);
-	}
-	if (ready_queue != NULL) {
-		printf("\tready_queue: ");
-		printList(ready_queue);
-	}
-	if (hold_queue_1 != NULL) {
-		printf("\thold_queue_1: ");
-		printList(hold_queue_1);
-	}
-	if (hold_queue_2 != NULL) {
-		printf("\thold_queue_2: ");
-		printList(hold_queue_2);
-	}
-	if (wait_queue != NULL) {
-		printf("\twait_queue: ");
-		printList(wait_queue);
-	}
-	if (complete_queue != NULL) {
-		printf("\tcomplete_queue: ");
-		printList(complete_queue);
-	}
-	fflush(stdout);
-}
-
-/*DELETE BEFORE SUBMISSION*/
-void print_sys_vars() {
-	printf("\tmain_mem: %d", main_memory);
-	printf("\tavail_mem: %d", avail_mem);
-	printf("\tserial_dev: %d", serial_devices);
-	printf("\tquantum: %d", time_quantum);
-	printf("\tcur_time: %d", cur_time);
-	printf("\tavail_dev: %d\n", avail_dev);
 }
 
 int main(void){
@@ -252,22 +335,21 @@ int main(void){
 	open_file(s_input);
 	cur_length = next_line(cur_line); //loading C command
 	parse_C(cur_line); // parsing initial command
-	print_sys_vars();
 	for (;;) {
-		printf("\n\n\nNEW ITERATION\n");
-		printf("STARTING INTERNAL\n");
+		//printf("\n\n\nNEW ITERATION\n");
+		//printf("STARTING INTERNAL\n");
 
 		/*internal event*/
 		if (ready_queue) CPU = pop(&ready_queue);
-		else printf("ready_queue empty.\n");
+		//else printf("ready_queue empty.\n");
 		/*we make the assumption that for instance if cur_time = 1, and i = 3, 
 		the work being done is for time unit 4*/
 		for (i = 0; i < time_quantum && flag; i++) {
 			if (cur_line[0] == 'R') cur_length = next_line(cur_line);
-			printf("\tin iteration %d, passing in %d cur_line reads in as %s", i, cur_time + i, cur_line);
+			//printf("\tin iteration %d, passing in %d cur_line reads in as %s", i, cur_time + i, cur_line);
 			if (CPU) {
-				printf("\tCPU: ");
-				printList(CPU);
+				//printf("\tCPU: ");
+				//printList(CPU);
 			}
 
 			if (CPU) {
@@ -280,7 +362,7 @@ int main(void){
 				}
 			}
 
-			else printf("CPU empty.\n");
+			//else printf("CPU empty.\n");
 			if (cur_line[0] == 'Q') {
 				parse_Q(cur_line, cur_time + i);
 				if (cur_line[0] == 'R') {//if command Q ran, it interrupted
@@ -297,7 +379,7 @@ int main(void){
 				parse_A(cur_line, cur_time+i);		//store in submit queue till it arrives
 			}
 			else if (cur_line[0] == 'D') {
-				printf("\tcur_line = D\n");
+				//printf("\tcur_line = D\n");
 				parse_D(cur_line, cur_time + i);
 			}
 			
@@ -309,10 +391,8 @@ int main(void){
 		cur_time += i;
 
 
-		printf("DONE INTERNAL\n");
-		print_sys_vars();
-		print_queues();
-		printf("STARTING EXTERNAL\n");
+		//printf("DONE INTERNAL\n");
+		//printf("STARTING EXTERNAL\n");
 
 		/*external event*/
 		while (submit_queue && cur_time >= submit_queue->arrive_time) {
@@ -328,26 +408,24 @@ int main(void){
 		while (hold_queue_2 && hold_queue_2->mem_req <= avail_mem) {
 			insertFIFO2(&ready_queue, pop(&hold_queue_2));
 		}
-		printf("DONE EXTERNAL\n");
-		print_sys_vars();
-		print_queues();
+		//printf("DONE EXTERNAL\n");
 		if (cur_line[0] != 'R') {
-			printf("current line isn't done yet.\n");
+			//printf("current line isn't done yet.\n");
 		}
 		else if (ready_queue != NULL) {
-			printf("ready queue still has jobs.\n");
+			//printf("ready queue still has jobs.\n");
 		}
 		else if (wait_queue != NULL) {
-			printf("wait queue still has processes\n");
+			//printf("wait queue still has processes\n");
 		}
 		else if (hold_queue_1 != NULL) {
-			printf("hold queue 1 still has jobs.\n");
+			//printf("hold queue 1 still has jobs.\n");
 		}
 		else if (hold_queue_2 != NULL) {
-			printf("hold queue 2 still has jobs.\n");
+			//printf("hold queue 2 still has jobs.\n");
 		}
 		else if (submit_queue) {
-			printf("submit queue still has jobs.\n");
+			//printf("submit queue still has jobs.\n");
 		}
 		else {
 			break;
