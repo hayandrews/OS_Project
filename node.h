@@ -1,6 +1,5 @@
 #ifndef NODE_H_   /* Include guard */
 #define NODE_H_
-
 struct Job
 {
 	/*
@@ -23,7 +22,7 @@ struct Job
 
 void insert_hold_2(struct Job * node);
 void insertFIFO2(struct Job **queue, struct Job * node);
-void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p);
+void insert_sub(int arr_t, int job_n, int mem_r, int dev_r, int run_t, int queue_p, int time);
 struct Job * pop(struct Job **queue);
 void printList(struct Job *queue);
 void insert_ready(struct Job * node);
