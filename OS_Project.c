@@ -87,7 +87,7 @@ https://stackoverflow.com/questions/4513316/split-string-in-c-every-white-space
 /* called by main in internal event when cur_line[0] = A
 - checks that the job does not require more than system has
 - puts job in submit queue*/
-void parse_A(char * command) {
+void parse_A(char * command, int time) {
 	int arr_t, job_n, mem_r, dev_r, run_t, queue_p;
 	char * pch;
 	pch = strtok(command, " =AJMSRP");
@@ -110,7 +110,7 @@ void parse_A(char * command) {
 		printf("job requires %d devices, but system only has %d devices.\n", dev_r, serial_devices);
 	}
 	else {
-		insert_sub(arr_t, job_n, mem_r, dev_r, run_t, queue_p);
+		insert_sub(arr_t, job_n, mem_r, dev_r, run_t, queue_p, time);
 	}
 
 	cur_line[0] = 'R';
@@ -294,7 +294,7 @@ int main(void){
 				}
 			}
 			else if (cur_line[0] == 'A'){
-				parse_A(cur_line);		//store in submit queue till it arrives
+				parse_A(cur_line, cur_time+i);		//store in submit queue till it arrives
 			}
 			else if (cur_line[0] == 'D') {
 				printf("\tcur_line = D\n");
