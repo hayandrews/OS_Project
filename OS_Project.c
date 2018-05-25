@@ -434,9 +434,6 @@ int main(void){
 	}
 	close_file();
 
-	/*The system turnaround time and system weighted turnaround only at the 
-	last display. Assume that the input file has a “D 9999” command at the end,
-	so that you dump the final state of the system.
-	*/
+	print_state(cur_time);
 
 }
